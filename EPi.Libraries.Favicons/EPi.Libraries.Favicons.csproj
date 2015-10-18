@@ -197,11 +197,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
-    <Content Include="readme.txt" />
+    <None Include="readme.txt" />
     <Content Include="Views\Shared\FavIcons.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Web.config" />
+    <None Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\ThemeColorAttribute.cs" />
@@ -215,11 +215,11 @@
     <Compile Include="Business\Initialization\FavIconInitialization.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="EPiServer.Libraries.snk" />
+    <None Include="EPiServer.Libraries.snk" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="web.config.install.xdt" />
-    <Content Include="web.config.uninstall.xdt" />
+    <None Include="web.config.install.xdt" />
+    <None Include="web.config.uninstall.xdt" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="EPi.Libraries.Favicons.csproj.nuspec" />
