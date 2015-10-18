@@ -16,3 +16,4 @@ Add the following to your header in your _Root,cshtml file to render the markup:
 
 @{ Html.RenderPartial("FavIcons");}
 
+Don't forget to enable MVC Attribute routing. ( RouteTable.Routes.MapMvcAttributeRoutes(); )

@@ -14,7 +14,8 @@
     <copyright>Copyright © Jeroen Stemerdink 2015</copyright>
     <tags>icons seo</tags>
     <dependencies>
-      <dependency id="EPiServer.Framework" version="[8.0, 10.0)" />
+      <dependency id="EPiServer.CMS.Core" version="[9.1.0, 10.0)" />
+      <dependency id="Microsoft.AspNet.Mvc" version="[5.2.2, 6.0)" />
       <dependency id="ImageResizer" version="[3.4.3, 4.0)" />
     </dependencies>
   </metadata>
