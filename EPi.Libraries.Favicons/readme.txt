@@ -14,6 +14,6 @@ When you upload an image, all favicons will be created automatically.
 
 Add the following to your header in your _Root,cshtml file to render the markup:
 
-@{ Html.RenderPartial("FavIcons");}
+@{ Html.RenderPartial("Favicons");}
 
 Don't forget to enable MVC Attribute routing. ( RouteTable.Routes.MapMvcAttributeRoutes(); )

@@ -28,7 +28,7 @@ public virtual string TileColor { get; set; }
 Add the following to your header in your _Root,cshtml file to render the markup:
 
 ```
-@{ Html.RenderPartial("FavIcons");}
+@{ Html.RenderPartial("Favicons");}
 ```
 
 Enable MVC Attribute Routing, you will need to upgrade to MVC 5+
