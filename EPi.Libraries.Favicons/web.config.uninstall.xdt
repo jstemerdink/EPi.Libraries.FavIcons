@@ -3,8 +3,8 @@
     <caching>
       <outputCacheSettings>
         <outputCacheProfiles>
-          <add name="BrowserConfigXml" duration="86400" location="Any" varyByParam="none" xdt:Transform="Remove" xdt:Locator="Match(path)" />
-          <add name="ManifestJson" duration="86400" location="Any" varyByParam="none" xdt:Transform="Remove" xdt:Locator="Match(path)" />
+          <add name="BrowserConfigXml" duration="86400" location="Any" varyByParam="none" xdt:Transform="Remove" xdt:Locator="Match(name)" />
+          <add name="ManifestJson" duration="86400" location="Any" varyByParam="none" xdt:Transform="Remove" xdt:Locator="Match(name)" />
         </outputCacheProfiles>
       </outputCacheSettings>
     </caching>
