@@ -2,7 +2,7 @@
 
 [WebsiteIcon]
 [UIHint(UIHint.Image)]
-public virtual ContentReference FavIcon { get; set; }
+public virtual ContentReference Favicon { get; set; }
 
 [ThemeColor]
 public virtual string ThemeColor { get; set; }

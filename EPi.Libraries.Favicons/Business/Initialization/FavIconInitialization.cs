@@ -21,17 +21,24 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
+using System;
 using System.Globalization;
 using System.IO;
 
 using EPi.Libraries.Favicons.Attributes;
+using EPi.Libraries.Favicons.Business.Services;
+using EPi.Libraries.Favicons.Models;
 
 using EPiServer;
 using EPiServer.Core;
+using EPiServer.Events;
+using EPiServer.Events.Clients;
 using EPiServer.Framework;
 using EPiServer.Framework.Blobs;
 using EPiServer.Framework.Initialization;
+using EPiServer.Logging;
 using EPiServer.ServiceLocation;
+using EPiServer.Web;
 
 using ImageResizer;
 
@@ -40,66 +47,174 @@ using InitializationModule = EPiServer.Web.InitializationModule;
 namespace EPi.Libraries.Favicons.Business.Initialization
 {
     /// <summary>
-    /// Class FaviconInitialization.
+    ///     Class Faviconinitialization.
     /// </summary>
     [InitializableModule]
     [ModuleDependency(typeof(InitializationModule))]
     public class FaviconInitialization : IInitializableModule
     {
         /// <summary>
-        /// Gets or sets the content events.
+        ///     FaviconsCreated
+        /// </summary>
+        private const string FaviconsCreated = "FaviconsCreated";
+
+        /// <summary>
+        ///     FaviconsDeleted
+        /// </summary>
+        private const string FaviconsDeleted = "FaviconsDeleted";
+
+        // Generate unique id for the raiser.
+        private static readonly Guid FaviconRaiserId = new Guid("8bc36f59-3167-4859-aa5d-61ef76a999de");
+
+        // Generate unique id for the reload event.
+        private static readonly Guid FaviconUpdatedEventId = new Guid("ad76bc78-0d3b-4049-a8da-a90a0d035e26");
+
+        private static readonly ILogger Logger = LogManager.GetLogger(typeof(FaviconInitialization));
+
+        /// <summary>
+        ///     Check if the initialization has been done.
+        /// </summary>
+        private static bool initialized;
+
+        /// <summary>
+        ///     Gets or sets the content events.
         /// </summary>
         /// <value>The content events.</value>
-        protected Injected<IContentEvents> ContentEvents { get; set; }
+        private Injected<IContentEvents> ContentEvents { get; set; }
 
         /// <summary>
-        /// Gets or sets the content repository.
+        ///     Gets or sets the event service.
+        /// </summary>
+        /// <value>The event service.</value>
+        private Injected<IEventRegistry> EventService { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the content repository.
         /// </summary>
         /// <value>The content repository.</value>
-        protected Injected<IContentRepository> ContentRepository { get; set; }
+        private Injected<IContentRepository> ContentRepository { get; set; }
 
         /// <summary>
-        /// Gets or sets the BLOB factory.
+        ///     Gets or sets the favicon service.
         /// </summary>
-        /// <value>The BLOB factory.</value>
-        protected Injected<BlobFactory> BlobFactory { get; set; }
+        /// <value>The favicon service.</value>
+        private Injected<IFaviconService> FaviconService { get; set; }
 
         /// <summary>
-        /// Initializes this instance.
+        ///     Initializes this instance.
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <remarks>Gets called as part of the EPiServer Framework initialization sequence. Note that it will be called
-        /// only once per AppDomain, unless the method throws an exception. If an exception is thrown, the initialization
-        /// method will be called repeadetly for each request reaching the site until the method succeeds.</remarks>
+        /// <remarks>
+        ///     Gets called as part of the EPiServer Framework initialization sequence. Note that it will be called
+        ///     only once per AppDomain, unless the method throws an exception. If an exception is thrown, the initialization
+        ///     method will be called repeadetly for each request reaching the site until the method succeeds.
+        /// </remarks>
         public void Initialize(InitializationEngine context)
         {
+            // If there is no context, we can't do anything.
+            if (context == null)
+            {
+                return;
+            }
+
+            // If already initialized, no need to do it again.
+            if (initialized)
+            {
+                return;
+            }
+
+            Logger.Information("[Favicons] Initializing favicons functionality.");
+
             //Add initialization logic, this method is called once after CMS has been initialized
             this.ContentEvents.Service.PublishedContent += this.ServiceOnPublishedContent;
+
+            // Make sure the RemoteCacheSynchronization event is registered before the custome event.
+            this.EventService.Service.Get(RemoteCacheSynchronization.RemoveFromCacheEventId);
+
+            // Attach a custom event to create the icons on another server, eg. in LoadBalanced environments.
+            Event faviconssUpdated = this.EventService.Service.Get(FaviconUpdatedEventId);
+            faviconssUpdated.Raised += this.FaviconsUpdatedEventRaised;
+
+            initialized = true;
+
+            Logger.Information("[Favicons] Favicons functionality initialized.");
         }
 
         /// <summary>
-        /// Resets the module into an uninitialized state.
+        ///     Resets the module into an uninitialized state.
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <remarks><para>
-        /// This method is usually not called when running under a web application since the web app may be shut down very
-        /// abruptly, but your module should still implement it properly since it will make integration and unit testing
-        /// much simpler.
-        /// </para>
-        /// <para>
-        /// Any work done by <see cref="M:EPiServer.Framework.IInitializableModule.Initialize(EPiServer.Framework.Initialization.InitializationEngine)" /> as well as any code executing on <see cref="E:EPiServer.Framework.Initialization.InitializationEngine.InitComplete" /> should be reversed.
-        /// </para></remarks>
+        /// <remarks>
+        ///     <para>
+        ///         This method is usually not called when running under a web application since the web app may be shut down very
+        ///         abruptly, but your module should still implement it properly since it will make integration and unit testing
+        ///         much simpler.
+        ///     </para>
+        ///     <para>
+        ///         Any work done by
+        ///         <see
+        ///             cref="M:EPiServer.Framework.IInitializableModule.Initialize(EPiServer.Framework.Initialization.InitializationEngine)" />
+        ///         as well as any code executing on
+        ///         <see cref="E:EPiServer.Framework.Initialization.InitializationEngine.InitComplete" /> should be reversed.
+        ///     </para>
+        /// </remarks>
         public void Uninitialize(InitializationEngine context)
         {
+            // If there is no context, we can't do anything.
+            if (context == null)
+            {
+                return;
+            }
+
+            // If already uninitialized, no need to do it again.
+            if (!initialized)
+            {
+                return;
+            }
+
+            Logger.Information("[Favicons] Uninitializing favicons functionality.");
+
             //Add uninitialization logic
             this.ContentEvents.Service.PublishedContent -= this.ServiceOnPublishedContent;
         }
 
-        /// <summary>
-        /// Services the content of the on published.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="contentEventArgs">The <see cref="ContentEventArgs"/> instance containing the event data.</param>
+        private void FaviconsUpdatedEventRaised(object sender, EventNotificationEventArgs e)
+        {
+            // We don't want to process events raised on this machine so we will check the raiser id.
+            if (e.RaiserId == FaviconRaiserId)
+            {
+                return;
+            }
+
+            string eventMessage = e.Param as string;
+
+            if (string.IsNullOrWhiteSpace(eventMessage))
+            {
+                return;
+            }
+
+            if (eventMessage.Equals(FaviconsCreated))
+            {
+                ContentData contentData;
+                this.ContentRepository.Service.TryGet(SiteDefinition.Current.StartPage, out contentData);
+                this.CreateFavicons(contentData);
+            }
+
+            if (eventMessage.Equals(FaviconsDeleted))
+            {
+                FaviconSettings faviconSettings = this.FaviconService.Service.GetFaviconSettings();
+                this.CleanUpFavicons(faviconSettings.FaviconsPath);
+            }
+
+            Logger.Information("[Favicons] Favicons created or deleted on other machine.");
+        }
+
+        private void RaiseEvent(string message)
+        {
+            // Raise the FaviconsUpdated event.
+            this.EventService.Service.Get(FaviconUpdatedEventId).Raise(FaviconRaiserId, message);
+        }
+
         private void ServiceOnPublishedContent(object sender, ContentEventArgs contentEventArgs)
         {
             if (contentEventArgs == null)
@@ -114,55 +229,25 @@ namespace EPi.Libraries.Favicons.Business.Initialization
 
             ContentData contentData = contentEventArgs.Content as ContentData;
 
-            this.CreateFavIcons(contentData);
+            this.CreateFavicons(contentData);
 
-            SetThemeColor(contentData);
-            SetTileColor(contentData);
-        }
+            FaviconSettings faviconSettings = this.FaviconService.Service.GetFaviconSettings();
 
-        /// <summary>
-        /// Sets the color of the theme.
-        /// </summary>
-        /// <param name="contentData">The content data.</param>
-        private static void SetThemeColor(ContentData contentData)
-        {
-            string themeColor = Helpers.GetPropertyValue<ThemeColorAttribute, string>(contentData);
-            
-            if (!string.IsNullOrWhiteSpace(themeColor))
+            if (!faviconSettings.FaviconsExist)
             {
-                FaviconSettings.Instance.ThemeColor = themeColor;
+                this.CleanUpFavicons(faviconSettings.FaviconsPath);
             }
         }
 
-        /// <summary>
-        /// Sets the color of the tile.
-        /// </summary>
-        /// <param name="contentData">The content data.</param>
-        private static void SetTileColor(ContentData contentData)
-        {
-            string tileColor = Helpers.GetPropertyValue<TileColorAttribute, string>(contentData);
-
-            if (!string.IsNullOrWhiteSpace(tileColor))
-            {
-                FaviconSettings.Instance.TileColor = tileColor;
-            }
-        }
-
-        /// <summary>
-        /// Creates the fav icons.
-        /// </summary>
-        /// <param name="contentData">The content data.</param>
-        private void CreateFavIcons(ContentData contentData)
+        private void CreateFavicons(ContentData contentData)
         {
             ContentReference iconReference =
-                Helpers.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
+                this.FaviconService.Service.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
 
-            string iconsPath = Helpers.GetIconPath();
+            string iconsPath = this.FaviconService.Service.GetIconPath();
 
             if (ContentReference.IsNullOrEmpty(iconReference))
             {
-                FaviconSettings.Instance.FaviconsExist = false;
-                CleanUpFavIcons(iconsPath);
                 return;
             }
 
@@ -172,8 +257,7 @@ namespace EPi.Libraries.Favicons.Business.Initialization
 
             if (iconFile == null)
             {
-                FaviconSettings.Instance.FaviconsExist = false;
-                CleanUpFavIcons(iconsPath);
+                Logger.Warning("[Favicons] Icon file not found.");
                 return;
             }
 
@@ -181,8 +265,7 @@ namespace EPi.Libraries.Favicons.Business.Initialization
 
             if (binaryData == null)
             {
-                FaviconSettings.Instance.FaviconsExist = false;
-                CleanUpFavIcons(iconsPath);
+                Logger.Warning("[Favicons] Icon is not a file.");
                 return;
             }
 
@@ -190,15 +273,12 @@ namespace EPi.Libraries.Favicons.Business.Initialization
 
             if (string.IsNullOrWhiteSpace(filePath))
             {
-                FaviconSettings.Instance.FaviconsExist = false;
-                CleanUpFavIcons(iconsPath);
+                Logger.Warning("[Favicons] Icon file has no path.");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(iconsPath))
             {
-                FaviconSettings.Instance.FaviconsExist = false;
-                CleanUpFavIcons(iconsPath);
                 return;
             }
 
@@ -231,36 +311,26 @@ namespace EPi.Libraries.Favicons.Business.Initialization
             CreateAndroidIcon(filePath, imageBuilder, iconsPath, 144, 144);
             CreateAndroidIcon(filePath, imageBuilder, iconsPath, 192, 192);
 
-            CreateFavIcon(filePath, imageBuilder, iconsPath, 16, 16);
-            CreateFavIcon(filePath, imageBuilder, iconsPath, 32, 32);
-            CreateFavIcon(filePath, imageBuilder, iconsPath, 96, 96);
-            CreateFavIcon(filePath, imageBuilder, iconsPath, 192, 192);
+            CreateFavicon(filePath, imageBuilder, iconsPath, 16, 16);
+            CreateFavicon(filePath, imageBuilder, iconsPath, 32, 32);
+            CreateFavicon(filePath, imageBuilder, iconsPath, 96, 96);
+            CreateFavicon(filePath, imageBuilder, iconsPath, 192, 192);
 
-            FaviconSettings.Instance.FaviconsExist = true;
+            this.RaiseEvent(FaviconsCreated);
         }
 
-        /// <summary>
-        /// Cleans up fav icons.
-        /// </summary>
-        /// <param name="iconsPath">The icons path.</param>
-        private static void CleanUpFavIcons(string iconsPath)
+        private void CleanUpFavicons(string iconsPath)
         {
-            if (!Helpers.IconPathExists(iconsPath))
+            if (!this.FaviconService.Service.IconPathExists(iconsPath))
             {
                 return;
             }
 
             Directory.Delete(iconsPath, true);
+
+            this.RaiseEvent(FaviconsDeleted);
         }
 
-        /// <summary>
-        /// Creates the apple icon.
-        /// </summary>
-        /// <param name="filePath">The file path.</param>
-        /// <param name="imageBuilder">The image builder.</param>
-        /// <param name="iconsPath">The icons path.</param>
-        /// <param name="width">The width.</param>
-        /// <param name="height">The height.</param>
         private static void CreateAppleIcon(
             string filePath,
             ImageBuilder imageBuilder,
@@ -285,14 +355,6 @@ namespace EPi.Libraries.Favicons.Business.Initialization
                 false);
         }
 
-        /// <summary>
-        /// Creates the ms tile icon.
-        /// </summary>
-        /// <param name="filePath">The file path.</param>
-        /// <param name="imageBuilder">The image builder.</param>
-        /// <param name="iconsPath">The icons path.</param>
-        /// <param name="width">The width.</param>
-        /// <param name="height">The height.</param>
         private static void CreateMsTileIcon(
             string filePath,
             ImageBuilder imageBuilder,
@@ -312,14 +374,6 @@ namespace EPi.Libraries.Favicons.Business.Initialization
                 false);
         }
 
-        /// <summary>
-        /// Creates the android icon.
-        /// </summary>
-        /// <param name="filePath">The file path.</param>
-        /// <param name="imageBuilder">The image builder.</param>
-        /// <param name="iconsPath">The icons path.</param>
-        /// <param name="width">The width.</param>
-        /// <param name="height">The height.</param>
         private static void CreateAndroidIcon(
             string filePath,
             ImageBuilder imageBuilder,
@@ -339,15 +393,7 @@ namespace EPi.Libraries.Favicons.Business.Initialization
                 false);
         }
 
-        /// <summary>
-        /// Creates the fav icon.
-        /// </summary>
-        /// <param name="filePath">The file path.</param>
-        /// <param name="imageBuilder">The image builder.</param>
-        /// <param name="iconsPath">The icons path.</param>
-        /// <param name="width">The width.</param>
-        /// <param name="height">The height.</param>
-        private static void CreateFavIcon(
+        private static void CreateFavicon(
             string filePath,
             ImageBuilder imageBuilder,
             string iconsPath,

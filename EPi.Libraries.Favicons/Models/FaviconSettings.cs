@@ -21,30 +21,35 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-using System;
-
-namespace EPi.Libraries.Favicons.Attributes
+namespace EPi.Libraries.Favicons.Models
 {
     /// <summary>
-    ///     Class WebsiteIconAttribute. This class cannot be inherited.
+    ///     Class FaviconSettings.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property)]
-    public sealed class WebsiteIconAttribute : Attribute
+    public class FaviconSettings
     {
-        #region Public Properties
+        /// <summary>
+        ///     Gets or sets the color of the theme.
+        /// </summary>
+        /// <value>The color of the theme.</value>
+        public string ThemeColor { get; set; }
 
         /// <summary>
-        ///     Gets a value indicating whether the property is used for the website icons.
+        ///     Gets or sets the color of the tile.
         /// </summary>
-        /// <value><c>true</c> if [used for the website icons]; otherwise, <c>false</c>.</value>
-        public static bool WebsiteIcon
-        {
-            get
-            {
-                return true;
-            }
-        }
+        /// <value>The color of the tile.</value>
+        public string TileColor { get; set; }
 
-        #endregion
+        /// <summary>
+        ///     Gets or sets a value indicating whether [fav icons exist].
+        /// </summary>
+        /// <value><c>true</c> if [fav icons exist]; otherwise, <c>false</c>.</value>
+        public bool FaviconsExist { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the favicons path.
+        /// </summary>
+        /// <value>The favicons path.</value>
+        public string FaviconsPath { get; set; }
     }
 }

@@ -192,15 +192,17 @@
     <None Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\NoTrailingSlashAttribute.cs" />
     <Compile Include="Attributes\ThemeColorAttribute.cs" />
     <Compile Include="Attributes\TileColorAttribute.cs" />
     <Compile Include="Attributes\WebsiteIconAttribute.cs" />
-    <Compile Include="Business\FavIconSettings.cs" />
-    <Compile Include="Business\Helpers.cs" />
-    <Compile Include="Controllers\FavIconController.cs" />
+    <Compile Include="Business\Services\FaviconService.cs" />
+    <Compile Include="Business\Services\IFaviconService.cs" />
+    <Compile Include="Controllers\FaviconController.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Models\FaviconSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Business\Initialization\FavIconInitialization.cs" />
+    <Compile Include="Business\Initialization\FaviconInitialization.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="EPiServer.Libraries.snk" />

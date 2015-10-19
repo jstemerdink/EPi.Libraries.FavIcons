@@ -33,8 +33,12 @@ using System.Web.Mvc;
 using System.Web.Routing;
 using System.Xml.Linq;
 
+using EPi.Libraries.Favicons.Attributes;
+using EPi.Libraries.Favicons.Models;
+
 using EPiServer;
 using EPiServer.Core;
+using EPiServer.Framework.Cache;
 using EPiServer.Logging;
 using EPiServer.ServiceLocation;
 using EPiServer.Web;
@@ -42,13 +46,31 @@ using EPiServer.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace EPi.Libraries.Favicons.Business
+namespace EPi.Libraries.Favicons.Business.Services
 {
     /// <summary>
-    ///     Class Helpers.
+    ///     Class FaviconService.
     /// </summary>
-    public static class Helpers
+    [ServiceConfiguration(typeof(IFaviconService), Lifecycle = ServiceInstanceScope.Singleton)]
+    public class FaviconService : IFaviconService
     {
+        /// <summary>
+        ///     The logger
+        /// </summary>
+        private static readonly ILogger Logger = LogManager.GetLogger(typeof(FaviconService));
+
+        /// <summary>
+        ///     Gets or sets the content repository.
+        /// </summary>
+        /// <value>The content repository.</value>
+        private Injected<IContentRepository> ContentRepository { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the synchronized object instance cache.
+        /// </summary>
+        /// <value>The synchronized object instance cache.</value>
+        private Injected<ISynchronizedObjectInstanceCache> SynchronizedObjectInstanceCache { get; set; }
+
         /// <summary>
         ///     Gets the browserconfig XML for the current site. This allows you to customize the tile, when a user pins
         ///     the site to their Windows 8/10 start screen. See http://www.buildmypinnedsite.com and
@@ -57,13 +79,13 @@ namespace EPi.Libraries.Favicons.Business
         /// <param name="requestContext">The request context.</param>
         /// <returns>The browserconfig XML for the current site.</returns>
         /// <remarks>Code based on https://github.com/RehanSaeed/ASP.NET-MVC-Boilerplate</remarks>
-        public static string GetBrowserConfigXml(RequestContext requestContext)
+        public string GetBrowserConfigXml(RequestContext requestContext)
         {
             try
             {
                 UrlHelper urlHelper = new UrlHelper(requestContext);
 
-                string iconsPath = GetVirtualIconPath();
+                string iconsPath = this.GetVirtualIconPath();
 
                 // The URL to the 70x70 small tile image.
                 string square70X70LogoUrl =
@@ -86,7 +108,7 @@ namespace EPi.Libraries.Favicons.Business
                         string.Format(CultureInfo.InvariantCulture, "{0}/{1}", iconsPath, "mstile-310x150.png"));
 
                 // The colour of the tile. This colour only shows if part of your images above are transparent.
-                string tileColour = GetTileColor();
+                string tileColour = this.GetTileColor();
 
                 XDocument document =
                     new XDocument(
@@ -106,7 +128,7 @@ namespace EPi.Libraries.Favicons.Business
             }
             catch (ArgumentNullException argumentNullException)
             {
-                Logger.Error("[FavIcons] Error creating browserconfig xml", argumentNullException);
+                Logger.Error("[Favicons] Error creating browserconfig xml", argumentNullException);
             }
 
             return string.Empty;
@@ -122,11 +144,11 @@ namespace EPi.Libraries.Favicons.Business
         /// <param name="requestContext">The request context.</param>
         /// <returns>The manifest JSON for the current site.</returns>
         /// <remarks>Code based on https://github.com/RehanSaeed/ASP.NET-MVC-Boilerplate</remarks>
-        public static string GetManifestJson(RequestContext requestContext)
+        public string GetManifestJson(RequestContext requestContext)
         {
             UrlHelper urlHelper = new UrlHelper(requestContext);
 
-            string iconsPath = GetVirtualIconPath();
+            string iconsPath = this.GetVirtualIconPath();
 
             JObject document = new JObject(
                 new JProperty("short_name", SiteDefinition.Current.Name),
@@ -199,6 +221,202 @@ namespace EPi.Libraries.Favicons.Business
         }
 
         /// <summary>
+        ///     Gets the icon path.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        public string GetVirtualIconPath()
+        {
+            try
+            {
+                string siteName = Regex.Replace(SiteDefinition.Current.Name.ToLowerInvariant(), "[^a-z0-9\\-]", "");
+                string iconRootPath = ConfigurationManager.AppSettings["sitesettings:iconroot"];
+
+                if (string.IsNullOrWhiteSpace(iconRootPath))
+                {
+                    iconRootPath = "/content/icons/";
+                }
+
+                return string.Format(CultureInfo.InvariantCulture, "{0}{1}", iconRootPath, siteName);
+            }
+            catch (Exception exception)
+            {
+                Logger.Warning("[Favicons] Error gettting the icon path", exception);
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        ///     Gets the icon path.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        public string GetIconPath()
+        {
+            try
+            {
+                return
+                    HostingEnvironment.MapPath(
+                        string.Format(CultureInfo.InvariantCulture, "~{0}", this.GetVirtualIconPath()));
+            }
+            catch (Exception exception)
+            {
+                Logger.Warning("[Favicons] Error gettting the icon path", exception);
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        ///     Checks if the icon path exists.
+        /// </summary>
+        /// <returns><c>true</c> if the icon path exists, <c>false</c> otherwise.</returns>
+        public bool IconPathExists()
+        {
+            string iconsPath = this.GetIconPath();
+            return this.IconPathExists(iconsPath);
+        }
+
+        /// <summary>
+        ///     Checks if the icon path exists.
+        /// </summary>
+        /// <param name="iconsPath">The icons path.</param>
+        /// <returns><c>true</c> if the icon path exists, <c>false</c> otherwise.</returns>
+        public bool IconPathExists(string iconsPath)
+        {
+            return !string.IsNullOrWhiteSpace(iconsPath) && Directory.Exists(iconsPath);
+        }
+
+        /// <summary>
+        ///     Gets the color of the theme.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        public string GetThemeColor()
+        {
+            FaviconSettings faviconSettings = this.GetFaviconSettings();
+            string themeColor = faviconSettings.ThemeColor;
+
+            if (!string.IsNullOrWhiteSpace(themeColor))
+            {
+                return themeColor;
+            }
+
+            try
+            {
+                themeColor = ConfigurationManager.AppSettings["sitesettings:themecolor"];
+            }
+            catch (NotSupportedException notSupportedException)
+            {
+                Logger.Warning("[Favicons] Error reading appsettings", notSupportedException);
+            }
+
+            return !string.IsNullOrWhiteSpace(themeColor) ? themeColor : "#1E1E1E";
+        }
+
+        /// <summary>
+        ///     Gets the color of the tile.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        public string GetTileColor()
+        {
+            FaviconSettings faviconSettings = this.GetFaviconSettings();
+            string tileColor = faviconSettings.TileColor;
+
+            if (!string.IsNullOrWhiteSpace(tileColor))
+            {
+                return tileColor;
+            }
+
+            try
+            {
+                tileColor = ConfigurationManager.AppSettings["sitesettings:tilecolor"];
+            }
+            catch (NotSupportedException notSupportedException)
+            {
+                Logger.Warning("[Favicons] Error reading appsettings", notSupportedException);
+            }
+
+            return !string.IsNullOrWhiteSpace(tileColor) ? tileColor : "#1E1E1E";
+        }
+
+        /// <summary>
+        ///     Gets the favicon settings.
+        /// </summary>
+        /// <returns>FaviconSettings.</returns>
+        public FaviconSettings GetFaviconSettings()
+        {
+            const string FaviconCacheKey = "FaviconSettings";
+
+            FaviconSettings faviconSettings =
+                this.SynchronizedObjectInstanceCache.Service.Get(FaviconCacheKey) as FaviconSettings;
+
+            if (faviconSettings != null)
+            {
+                return faviconSettings;
+            }
+
+            ContentData contentData;
+            this.ContentRepository.Service.TryGet(SiteDefinition.Current.StartPage, out contentData);
+
+            faviconSettings = new FaviconSettings
+                                  {
+                                      ThemeColor =
+                                          this.GetPropertyValue<ThemeColorAttribute, string>(
+                                              contentData),
+                                      TileColor =
+                                          this.GetPropertyValue<TileColorAttribute, string>(contentData),
+                                      FaviconsExist = this.IconPathExists(),
+                                      FaviconsPath = this.GetVirtualIconPath()
+                                  };
+
+            CacheEvictionPolicy cacheEvictionPolicy =
+                new CacheEvictionPolicy(new[] { DataFactoryCache.PageCommonCacheKey(SiteDefinition.Current.StartPage) });
+
+            this.SynchronizedObjectInstanceCache.Service.Insert(FaviconCacheKey, faviconSettings, cacheEvictionPolicy);
+
+            return faviconSettings;
+        }
+
+        /// <summary>
+        ///     Gets the property value.
+        /// </summary>
+        /// <typeparam name="T">The type of the attribute to check for.</typeparam>
+        /// <typeparam name="TO">The type of the class to check.</typeparam>
+        /// <param name="contentData">The content data.</param>
+        /// <returns>TO.</returns>
+        public TO GetPropertyValue<T, TO>(ContentData contentData) where T : Attribute where TO : class
+        {
+            if (contentData == null)
+            {
+                return default(TO);
+            }
+
+            PropertyInfo propertyInfo =
+                contentData.GetType().GetProperties().Where(this.HasAttribute<T>).FirstOrDefault();
+
+            if (propertyInfo == null)
+            {
+                return default(TO);
+            }
+
+            return contentData.GetValue(propertyInfo.Name) as TO;
+        }
+
+        /// <summary>
+        ///     Gets the property value.
+        /// </summary>
+        /// <typeparam name="T">The type of the attribute to check for.</typeparam>
+        /// <typeparam name="TO">The type of the class to check.</typeparam>
+        /// <param name="contentReference">The content reference.</param>
+        /// <returns>TO.</returns>
+        public TO GetPropertyValue<T, TO>(ContentReference contentReference) where T : Attribute where TO : class
+        {
+            ContentData contentData;
+            this.ContentRepository.Service.TryGet(contentReference, out contentData);
+
+            return contentData == null ? default(TO) : this.GetPropertyValue<T, TO>(contentData);
+        }
+
+        /// <summary>
         ///     Gets a <see cref="JObject" /> containing the specified image details.
         /// </summary>
         /// <param name="urlHelper">The url helper.</param>
@@ -223,169 +441,12 @@ namespace EPi.Libraries.Favicons.Business
         }
 
         /// <summary>
-        ///     Gets the icon path.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        public static string GetVirtualIconPath()
-        {
-            try
-            {
-                string siteName = Regex.Replace(SiteDefinition.Current.Name.ToLowerInvariant(), "[^a-z0-9\\-]", "");
-                string iconRootPath = ConfigurationManager.AppSettings["sitesettings:iconroot"];
-
-                if (string.IsNullOrWhiteSpace(iconRootPath))
-                {
-                    iconRootPath = "/content/icons/";
-                }
-
-                return string.Format(CultureInfo.InvariantCulture, "{0}{1}", iconRootPath, siteName);
-            }
-            catch (Exception exception)
-            {
-                Logger.Warning("[FavIcons] Error gettting the icon path", exception);
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        ///     Gets the icon path.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        public static string GetIconPath()
-        {
-            try
-            {
-                return
-                    HostingEnvironment.MapPath(
-                        string.Format(CultureInfo.InvariantCulture, "~{0}", GetVirtualIconPath()));
-            }
-            catch (Exception exception)
-            {
-                Logger.Warning("[FavIcons] Error gettting the icon path", exception);
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        ///     Icons the path exists.
-        /// </summary>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        public static bool IconPathExists()
-        {
-            string iconsPath = GetIconPath();
-            return IconPathExists(iconsPath);
-        }
-
-        /// <summary>
-        ///     Icons the path exists.
-        /// </summary>
-        /// <param name="iconsPath">The icons path.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        public static bool IconPathExists(string iconsPath)
-        {
-            return !string.IsNullOrWhiteSpace(iconsPath) && Directory.Exists(iconsPath);
-        }
-
-        /// <summary>
-        ///     Gets the color of the theme.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        public static string GetThemeColor()
-        {
-            string themeColor = FaviconSettings.Instance.ThemeColor;
-
-            if (!string.IsNullOrWhiteSpace(themeColor))
-            {
-                return themeColor;
-            }
-
-            try
-            {
-                themeColor = ConfigurationManager.AppSettings["sitesettings:themecolor"];
-            }
-            catch (NotSupportedException notSupportedException)
-            {
-                Logger.Warning("[FavIcons] Error reading appsettings", notSupportedException);
-            }
-
-            return !string.IsNullOrWhiteSpace(themeColor) ? themeColor : "#1E1E1E";
-        }
-
-        /// <summary>
-        ///     Gets the color of the tile.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        public static string GetTileColor()
-        {
-            string tileColor = FaviconSettings.Instance.TileColor;
-
-            if (!string.IsNullOrWhiteSpace(tileColor))
-            {
-                return tileColor;
-            }
-
-            try
-            {
-                tileColor = ConfigurationManager.AppSettings["sitesettings:tilecolor"];
-            }
-            catch (NotSupportedException notSupportedException)
-            {
-                Logger.Warning("[FavIcons] Error reading appsettings", notSupportedException);
-            }
-
-            return !string.IsNullOrWhiteSpace(tileColor) ? tileColor : "#1E1E1E";
-        }
-
-        /// <summary>
-        ///     Gets the property value.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="TO">The type of to.</typeparam>
-        /// <param name="contentData">The content data.</param>
-        /// <returns>TO.</returns>
-        internal static TO GetPropertyValue<T, TO>(ContentData contentData) where T : Attribute where TO : class
-        {
-            if (contentData == null)
-            {
-                return default(TO);
-            }
-
-            PropertyInfo propertyInfo =
-                contentData.GetType().GetProperties().Where(HasAttribute<T>).FirstOrDefault();
-
-            if (propertyInfo == null)
-            {
-                return default(TO);
-            }
-
-            return contentData.GetValue(propertyInfo.Name) as TO;
-        }
-
-        /// <summary>
-        ///     Gets the property value.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="TO">The type of to.</typeparam>
-        /// <param name="contentReference">The content reference.</param>
-        /// <returns>TO.</returns>
-        internal static TO GetPropertyValue<T, TO>(ContentReference contentReference) where T : Attribute
-            where TO : class
-        {
-            ContentData contentData;
-            ContentRepository.Service.TryGet(contentReference, out contentData);
-
-            return contentData == null ? default(TO) : GetPropertyValue<T, TO>(contentData);
-        }
-
-        /// <summary>
         ///     Determines whether the specified self has attribute.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="propertyInfo">The propertyInfo.</param>
         /// <returns><c>true</c> if the specified self has attribute; otherwise, <c>false</c>.</returns>
-        private static bool HasAttribute<T>(PropertyInfo propertyInfo) where T : Attribute
+        private bool HasAttribute<T>(PropertyInfo propertyInfo) where T : Attribute
         {
             T attr = default(T);
 
@@ -393,27 +454,11 @@ namespace EPi.Libraries.Favicons.Business
             {
                 attr = (T)Attribute.GetCustomAttribute(propertyInfo, typeof(T));
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                Logger.Warning("[FavIcons] Error gettting attribute", exception);
             }
 
             return attr != null;
         }
-
-        #region Static Fields
-
-        /// <summary>
-        ///     The logger
-        /// </summary>
-        private static readonly ILogger Logger = LogManager.GetLogger(typeof(Helpers));
-
-        /// <summary>
-        ///     Gets or sets the content repository.
-        /// </summary>
-        /// <value>The content repository.</value>
-        private static Injected<IContentRepository> ContentRepository { get; set; }
-
-        #endregion
     }
 }

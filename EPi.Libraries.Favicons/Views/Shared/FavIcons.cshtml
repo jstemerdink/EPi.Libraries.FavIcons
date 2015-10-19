@@ -1,8 +1,20 @@
-﻿@using EPi.Libraries.Favicons.Business
+﻿@using EPi.Libraries.Favicons.Business.Services
+@using EPi.Libraries.Favicons.Models
+@using EPiServer.ServiceLocation
 @using EPiServer.Web
+
 @{
-    string iconPath = Helpers.GetVirtualIconPath();
-    bool displayIcons = FaviconSettings.Instance.FaviconsExist;
+    FaviconSettings faviconSettings = new FaviconSettings();
+    try
+    {
+        faviconSettings = ServiceLocator.Current.GetInstance<IFaviconService>().GetFaviconSettings();
+    }
+    catch (ActivationException)
+    {
+    }
+    
+    string iconPath = faviconSettings.FaviconsPath;
+    bool displayIcons = faviconSettings.FaviconsExist;
 }
 
 @if (displayIcons)
@@ -21,11 +33,9 @@
     <link rel="icon" type="image/png" href="@iconPath/favicon-96x96.png" sizes="96x96">
     <link rel="icon" type="image/png" href="@iconPath/favicon-16x16.png" sizes="16x16">
     <link rel="manifest" href="@Url.RouteUrl("GetManifestJson")">
-    <meta name="theme-color" content="@Helpers.GetThemeColor()">
+    <meta name="theme-color" content="@faviconSettings.ThemeColor">
     <meta name="application-name" content="@SiteDefinition.Current.Name">
-    <meta name="msapplication-TileColor" content="@Helpers.GetTileColor()">
+    <meta name="msapplication-TileColor" content="@faviconSettings.TileColor">
     <meta name="msapplication-TileImage" content="@iconPath/mstile-144x144.png">
     <meta name="msapplication-config" content="@Url.RouteUrl("GetBrowserConfigXml")">
 }
-
-
