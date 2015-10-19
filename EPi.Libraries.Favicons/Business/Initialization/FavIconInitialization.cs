@@ -27,7 +27,6 @@ using System.IO;
 
 using EPi.Libraries.Favicons.Attributes;
 using EPi.Libraries.Favicons.Business.Services;
-using EPi.Libraries.Favicons.Models;
 
 using EPiServer;
 using EPiServer.Core;
@@ -69,6 +68,9 @@ namespace EPi.Libraries.Favicons.Business.Initialization
         // Generate unique id for the reload event.
         private static readonly Guid FaviconUpdatedEventId = new Guid("ad76bc78-0d3b-4049-a8da-a90a0d035e26");
 
+        /// <summary>
+        /// The logger
+        /// </summary>
         private static readonly ILogger Logger = LogManager.GetLogger(typeof(FaviconInitialization));
 
         /// <summary>
@@ -197,13 +199,16 @@ namespace EPi.Libraries.Favicons.Business.Initialization
             {
                 ContentData contentData;
                 this.ContentRepository.Service.TryGet(SiteDefinition.Current.StartPage, out contentData);
-                this.CreateFavicons(contentData);
+
+                ContentReference iconReference =
+                this.FaviconService.Service.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
+
+                this.CreateFavicons(iconReference);
             }
 
             if (eventMessage.Equals(FaviconsDeleted))
             {
-                FaviconSettings faviconSettings = this.FaviconService.Service.GetFaviconSettings();
-                this.CleanUpFavicons(faviconSettings.FaviconsPath);
+                this.CleanUpFavicons(this.FaviconService.Service.GetIconPath());
             }
 
             Logger.Information("[Favicons] Favicons created or deleted on other machine.");
@@ -229,28 +234,20 @@ namespace EPi.Libraries.Favicons.Business.Initialization
 
             ContentData contentData = contentEventArgs.Content as ContentData;
 
-            this.CreateFavicons(contentData);
-
-            FaviconSettings faviconSettings = this.FaviconService.Service.GetFaviconSettings();
-
-            if (!faviconSettings.FaviconsExist)
-            {
-                this.CleanUpFavicons(faviconSettings.FaviconsPath);
-            }
-        }
-
-        private void CreateFavicons(ContentData contentData)
-        {
             ContentReference iconReference =
                 this.FaviconService.Service.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
 
-            string iconsPath = this.FaviconService.Service.GetIconPath();
-
-            if (ContentReference.IsNullOrEmpty(iconReference))
+            if (ContentReference.IsNullOrEmpty(iconReference) && this.FaviconService.Service.IconPathExists())
             {
+                this.CleanUpFavicons(this.FaviconService.Service.GetIconPath());
                 return;
             }
 
+            this.CreateFavicons(iconReference);
+        }
+
+        private void CreateFavicons(ContentReference iconReference)
+        {
             ImageData iconFile;
 
             this.ContentRepository.Service.TryGet(iconReference, out iconFile);
@@ -276,6 +273,8 @@ namespace EPi.Libraries.Favicons.Business.Initialization
                 Logger.Warning("[Favicons] Icon file has no path.");
                 return;
             }
+
+            string iconsPath = this.FaviconService.Service.GetIconPath();
 
             if (string.IsNullOrWhiteSpace(iconsPath))
             {
