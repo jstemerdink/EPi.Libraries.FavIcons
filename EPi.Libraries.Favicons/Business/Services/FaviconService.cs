@@ -87,7 +87,7 @@ namespace EPi.Libraries.Favicons.Business.Services
             try
             {
                 UrlHelper urlHelper = new UrlHelper(requestContext);
-
+                FaviconSettings faviconSettings = this.GetFaviconSettings();
                 string iconsPath = this.GetVirtualIconPath();
 
                 // The URL to the 70x70 small tile image.
@@ -111,7 +111,7 @@ namespace EPi.Libraries.Favicons.Business.Services
                         string.Format(CultureInfo.InvariantCulture, "{0}/{1}", iconsPath, "mstile-310x150.png"));
 
                 // The colour of the tile. This colour only shows if part of your images above are transparent.
-                string tileColour = this.GetTileColor();
+                string tileColour = faviconSettings.TileColor;
 
                 XDocument document =
                     new XDocument(
@@ -150,12 +150,12 @@ namespace EPi.Libraries.Favicons.Business.Services
         public string GetManifestJson(RequestContext requestContext)
         {
             UrlHelper urlHelper = new UrlHelper(requestContext);
-
+            FaviconSettings faviconSettings = this.GetFaviconSettings();
             string iconsPath = this.GetVirtualIconPath();
-
+            
             JObject document = new JObject(
-                new JProperty("short_name", SiteDefinition.Current.Name),
-                new JProperty("name", SiteDefinition.Current.Name),
+                new JProperty("short_name", faviconSettings.ApplicationShortName),
+                new JProperty("name", faviconSettings.ApplicationName),
                 new JProperty(
                     "icons",
                     new JArray(
@@ -290,58 +290,6 @@ namespace EPi.Libraries.Favicons.Business.Services
         }
 
         /// <summary>
-        ///     Gets the color of the theme.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        public string GetThemeColor()
-        {
-            FaviconSettings faviconSettings = this.GetFaviconSettings();
-            string themeColor = faviconSettings.ThemeColor;
-
-            if (!string.IsNullOrWhiteSpace(themeColor))
-            {
-                return themeColor;
-            }
-
-            try
-            {
-                themeColor = ConfigurationManager.AppSettings["sitesettings:themecolor"];
-            }
-            catch (NotSupportedException notSupportedException)
-            {
-                Logger.Warning("[Favicons] Error reading appsettings", notSupportedException);
-            }
-
-            return !string.IsNullOrWhiteSpace(themeColor) ? themeColor : "#1E1E1E";
-        }
-
-        /// <summary>
-        ///     Gets the color of the tile.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        public string GetTileColor()
-        {
-            FaviconSettings faviconSettings = this.GetFaviconSettings();
-            string tileColor = faviconSettings.TileColor;
-
-            if (!string.IsNullOrWhiteSpace(tileColor))
-            {
-                return tileColor;
-            }
-
-            try
-            {
-                tileColor = ConfigurationManager.AppSettings["sitesettings:tilecolor"];
-            }
-            catch (NotSupportedException notSupportedException)
-            {
-                Logger.Warning("[Favicons] Error reading appsettings", notSupportedException);
-            }
-
-            return !string.IsNullOrWhiteSpace(tileColor) ? tileColor : "#1E1E1E";
-        }
-
-        /// <summary>
         ///     Gets the favicon settings.
         /// </summary>
         /// <returns>FaviconSettings.</returns>
@@ -360,6 +308,8 @@ namespace EPi.Libraries.Favicons.Business.Services
             ContentData contentData;
             this.ContentRepository.Service.TryGet(SiteDefinition.Current.StartPage, out contentData);
 
+            string applicationName = this.GetPropertyValue<ApplicationNameAttribute, string>(contentData);
+            string applicationShortName = this.GetPropertyValue<ApplicationShortNameAttribute, string>(contentData);
             string themeColor = this.GetPropertyValue<ThemeColorAttribute, string>(contentData);
             string tileColor = this.GetPropertyValue<TileColorAttribute, string>(contentData);
             string faviconsPath = this.GetVirtualIconPath();
@@ -367,10 +317,12 @@ namespace EPi.Libraries.Favicons.Business.Services
 
             faviconSettings = new FaviconSettings
                                   {
-                                      ThemeColor = themeColor,
-                                      TileColor = tileColor,
+                                      ThemeColor = !string.IsNullOrWhiteSpace(themeColor) ? themeColor : "#1E1E1E",
+                                      TileColor = !string.IsNullOrWhiteSpace(tileColor) ? tileColor : "#1E1E1E",
                                       DisplayFavicons = !ContentReference.IsNullOrEmpty(faviconReference),
-                                      FaviconsPath = faviconsPath
+                                      FaviconsPath = faviconsPath,
+                                      ApplicationName = string.IsNullOrWhiteSpace(applicationName) ? SiteDefinition.Current.Name : applicationName,
+                                      ApplicationShortName = string.IsNullOrWhiteSpace(applicationShortName) ? SiteDefinition.Current.Name : applicationShortName
                                   };
 
             CacheEvictionPolicy cacheEvictionPolicy =

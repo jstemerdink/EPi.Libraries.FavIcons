@@ -51,5 +51,17 @@ namespace EPi.Libraries.Favicons.Models
         /// </summary>
         /// <value>The favicons path.</value>
         public string FaviconsPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the application.
+        /// </summary>
+        /// <value>The name of the application.</value>
+        public string ApplicationName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the short name of the application.
+        /// </summary>
+        /// <value>The short name of the application.</value>
+        public string ApplicationShortName { get; set; }
     }
 }

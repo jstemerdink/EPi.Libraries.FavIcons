@@ -192,7 +192,9 @@
     <None Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\ApplicationShortNameAttribute.cs" />
     <Compile Include="Attributes\NoTrailingSlashAttribute.cs" />
+    <Compile Include="Attributes\ApplicationNameAttribute.cs" />
     <Compile Include="Attributes\ThemeColorAttribute.cs" />
     <Compile Include="Attributes\TileColorAttribute.cs" />
     <Compile Include="Attributes\WebsiteIconAttribute.cs" />
