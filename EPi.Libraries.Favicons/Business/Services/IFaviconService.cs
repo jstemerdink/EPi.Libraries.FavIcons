@@ -83,18 +83,6 @@ namespace EPi.Libraries.Favicons.Business.Services
         bool IconPathExists(string iconsPath);
 
         /// <summary>
-        ///     Gets the color of the theme.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        string GetThemeColor();
-
-        /// <summary>
-        ///     Gets the color of the tile.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        string GetTileColor();
-
-        /// <summary>
         ///     Gets the favicon settings.
         /// </summary>
         /// <returns>FaviconSettings.</returns>
