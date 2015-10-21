@@ -41,10 +41,10 @@ namespace EPi.Libraries.Favicons.Models
         public string TileColor { get; set; }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether [fav icons exist].
+        ///     Gets or sets a value indicating whether [to display the favicons].
         /// </summary>
-        /// <value><c>true</c> if [fav icons exist]; otherwise, <c>false</c>.</value>
-        public bool FaviconsExist { get; set; }
+        /// <value><c>true</c> if [to display the favicons]; otherwise, <c>false</c>.</value>
+        public bool DisplayFavicons { get; set; }
 
         /// <summary>
         ///     Gets or sets the favicons path.

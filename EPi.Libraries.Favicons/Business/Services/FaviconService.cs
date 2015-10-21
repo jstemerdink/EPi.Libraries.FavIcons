@@ -38,10 +38,13 @@ using EPi.Libraries.Favicons.Models;
 
 using EPiServer;
 using EPiServer.Core;
+using EPiServer.Framework.Blobs;
 using EPiServer.Framework.Cache;
 using EPiServer.Logging;
 using EPiServer.ServiceLocation;
 using EPiServer.Web;
+
+using ImageResizer;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -357,15 +360,17 @@ namespace EPi.Libraries.Favicons.Business.Services
             ContentData contentData;
             this.ContentRepository.Service.TryGet(SiteDefinition.Current.StartPage, out contentData);
 
+            string themeColor = this.GetPropertyValue<ThemeColorAttribute, string>(contentData);
+            string tileColor = this.GetPropertyValue<TileColorAttribute, string>(contentData);
+            string faviconsPath = this.GetVirtualIconPath();
+            ContentReference faviconReference = this.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
+
             faviconSettings = new FaviconSettings
                                   {
-                                      ThemeColor =
-                                          this.GetPropertyValue<ThemeColorAttribute, string>(
-                                              contentData),
-                                      TileColor =
-                                          this.GetPropertyValue<TileColorAttribute, string>(contentData),
-                                      FaviconsExist = this.IconPathExists(),
-                                      FaviconsPath = this.GetVirtualIconPath()
+                                      ThemeColor = themeColor,
+                                      TileColor = tileColor,
+                                      DisplayFavicons = !ContentReference.IsNullOrEmpty(faviconReference),
+                                      FaviconsPath = faviconsPath
                                   };
 
             CacheEvictionPolicy cacheEvictionPolicy =
@@ -417,6 +422,98 @@ namespace EPi.Libraries.Favicons.Business.Services
         }
 
         /// <summary>
+        ///     Creates the favicons.
+        /// </summary>
+        /// <param name="iconReference">The icon reference.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        public bool CreateFavicons(ContentReference iconReference)
+        {
+            ImageData iconFile;
+
+            this.ContentRepository.Service.TryGet(iconReference, out iconFile);
+
+            if (iconFile == null)
+            {
+                Logger.Warning("[Favicons] Icon file not found.");
+                return false;
+            }
+
+            FileBlob binaryData = iconFile.BinaryData as FileBlob;
+
+            if (binaryData == null)
+            {
+                Logger.Warning("[Favicons] Icon is not a file.");
+                return false;
+            }
+
+            string filePath = binaryData.FilePath;
+
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                Logger.Warning("[Favicons] Icon file has no path.");
+                return false;
+            }
+
+            string iconsPath = this.GetIconPath();
+
+            if (string.IsNullOrWhiteSpace(iconsPath))
+            {
+                return false;
+            }
+
+            if (!Directory.Exists(iconsPath))
+            {
+                Directory.CreateDirectory(iconsPath);
+            }
+
+            ImageBuilder imageBuilder = ImageBuilder.Current;
+
+            CreateAppleIcon(filePath, imageBuilder, iconsPath, 57, 57);
+            CreateAppleIcon(filePath, imageBuilder, iconsPath, 60, 60);
+            CreateAppleIcon(filePath, imageBuilder, iconsPath, 72, 72);
+            CreateAppleIcon(filePath, imageBuilder, iconsPath, 76, 76);
+            CreateAppleIcon(filePath, imageBuilder, iconsPath, 114, 114);
+            CreateAppleIcon(filePath, imageBuilder, iconsPath, 120, 120);
+            CreateAppleIcon(filePath, imageBuilder, iconsPath, 144, 144);
+            CreateAppleIcon(filePath, imageBuilder, iconsPath, 152, 152);
+            CreateAppleIcon(filePath, imageBuilder, iconsPath, 180, 180);
+
+            CreateMsTileIcon(filePath, imageBuilder, iconsPath, 70, 70);
+            CreateMsTileIcon(filePath, imageBuilder, iconsPath, 150, 150);
+            CreateMsTileIcon(filePath, imageBuilder, iconsPath, 310, 310);
+            CreateMsTileIcon(filePath, imageBuilder, iconsPath, 310, 150);
+
+            CreateAndroidIcon(filePath, imageBuilder, iconsPath, 36, 36);
+            CreateAndroidIcon(filePath, imageBuilder, iconsPath, 48, 48);
+            CreateAndroidIcon(filePath, imageBuilder, iconsPath, 72, 72);
+            CreateAndroidIcon(filePath, imageBuilder, iconsPath, 96, 96);
+            CreateAndroidIcon(filePath, imageBuilder, iconsPath, 144, 144);
+            CreateAndroidIcon(filePath, imageBuilder, iconsPath, 192, 192);
+
+            CreateFavicon(filePath, imageBuilder, iconsPath, 16, 16);
+            CreateFavicon(filePath, imageBuilder, iconsPath, 32, 32);
+            CreateFavicon(filePath, imageBuilder, iconsPath, 96, 96);
+            CreateFavicon(filePath, imageBuilder, iconsPath, 192, 192);
+
+            return true;
+        }
+
+        /// <summary>
+        ///     Cleans up favicons.
+        /// </summary>
+        public void CleanUpFavicons()
+        {
+            string iconsPath = this.GetIconPath();
+
+            if (!this.IconPathExists(iconsPath))
+            {
+                return;
+            }
+
+            Directory.Delete(iconsPath, true);
+        }
+
+        /// <summary>
         ///     Gets a <see cref="JObject" /> containing the specified image details.
         /// </summary>
         /// <param name="urlHelper">The url helper.</param>
@@ -459,6 +556,87 @@ namespace EPi.Libraries.Favicons.Business.Services
             }
 
             return attr != null;
+        }
+
+        private static void CreateAppleIcon(
+            string filePath,
+            ImageBuilder imageBuilder,
+            string iconsPath,
+            int width,
+            int height)
+        {
+            imageBuilder.Build(
+                filePath,
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0}/apple-touch-icon-{1}x{2}.png",
+                    iconsPath,
+                    width,
+                    height),
+                new ResizeSettings(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "width={0}&height={1}&crop=auto&format=png",
+                        width,
+                        height)),
+                false);
+        }
+
+        private static void CreateMsTileIcon(
+            string filePath,
+            ImageBuilder imageBuilder,
+            string iconsPath,
+            int width,
+            int height)
+        {
+            imageBuilder.Build(
+                filePath,
+                string.Format(CultureInfo.InvariantCulture, "{0}/mstile-{1}x{2}.png", iconsPath, width, height),
+                new ResizeSettings(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "width={0}&height={1}&crop=auto&format=png",
+                        width,
+                        height)),
+                false);
+        }
+
+        private static void CreateAndroidIcon(
+            string filePath,
+            ImageBuilder imageBuilder,
+            string iconsPath,
+            int width,
+            int height)
+        {
+            imageBuilder.Build(
+                filePath,
+                string.Format(CultureInfo.InvariantCulture, "{0}/android-chrome-{1}x{2}.png", iconsPath, width, height),
+                new ResizeSettings(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "width={0}&height={1}&crop=auto&format=png",
+                        width,
+                        height)),
+                false);
+        }
+
+        private static void CreateFavicon(
+            string filePath,
+            ImageBuilder imageBuilder,
+            string iconsPath,
+            int width,
+            int height)
+        {
+            imageBuilder.Build(
+                filePath,
+                string.Format(CultureInfo.InvariantCulture, "{0}/favicon-{1}x{2}.png", iconsPath, width, height),
+                new ResizeSettings(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "width={0}&height={1}&crop=auto&format=png",
+                        width,
+                        height)),
+                false);
         }
     }
 }

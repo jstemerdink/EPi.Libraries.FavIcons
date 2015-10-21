@@ -22,8 +22,6 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
-using System.Globalization;
-using System.IO;
 
 using EPi.Libraries.Favicons.Attributes;
 using EPi.Libraries.Favicons.Business.Services;
@@ -33,13 +31,10 @@ using EPiServer.Core;
 using EPiServer.Events;
 using EPiServer.Events.Clients;
 using EPiServer.Framework;
-using EPiServer.Framework.Blobs;
 using EPiServer.Framework.Initialization;
 using EPiServer.Logging;
 using EPiServer.ServiceLocation;
 using EPiServer.Web;
-
-using ImageResizer;
 
 using InitializationModule = EPiServer.Web.InitializationModule;
 
@@ -53,14 +48,14 @@ namespace EPi.Libraries.Favicons.Business.Initialization
     public class FaviconInitialization : IInitializableModule
     {
         /// <summary>
-        ///     FaviconsCreated
+        ///     CreateFavicons
         /// </summary>
-        private const string FaviconsCreated = "FaviconsCreated";
+        private const string CreateFavicons = "CreateFavicons";
 
         /// <summary>
-        ///     FaviconsDeleted
+        ///     DeleteFavicons
         /// </summary>
-        private const string FaviconsDeleted = "FaviconsDeleted";
+        private const string DeleteFavicons = "DeleteFavicons";
 
         // Generate unique id for the raiser.
         private static readonly Guid FaviconRaiserId = new Guid("8bc36f59-3167-4859-aa5d-61ef76a999de");
@@ -69,7 +64,7 @@ namespace EPi.Libraries.Favicons.Business.Initialization
         private static readonly Guid FaviconUpdatedEventId = new Guid("ad76bc78-0d3b-4049-a8da-a90a0d035e26");
 
         /// <summary>
-        /// The logger
+        ///     The logger
         /// </summary>
         private static readonly ILogger Logger = LogManager.GetLogger(typeof(FaviconInitialization));
 
@@ -178,6 +173,8 @@ namespace EPi.Libraries.Favicons.Business.Initialization
 
             //Add uninitialization logic
             this.ContentEvents.Service.PublishedContent -= this.ServiceOnPublishedContent;
+
+            Logger.Information("[Favicons] Favicons functionality uninitialized.");
         }
 
         private void FaviconsUpdatedEventRaised(object sender, EventNotificationEventArgs e)
@@ -195,20 +192,20 @@ namespace EPi.Libraries.Favicons.Business.Initialization
                 return;
             }
 
-            if (eventMessage.Equals(FaviconsCreated))
+            if (eventMessage.Equals(CreateFavicons))
             {
                 ContentData contentData;
                 this.ContentRepository.Service.TryGet(SiteDefinition.Current.StartPage, out contentData);
 
                 ContentReference iconReference =
-                this.FaviconService.Service.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
+                    this.FaviconService.Service.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
 
-                this.CreateFavicons(iconReference);
+                this.FaviconService.Service.CreateFavicons(iconReference);
             }
 
-            if (eventMessage.Equals(FaviconsDeleted))
+            if (eventMessage.Equals(DeleteFavicons))
             {
-                this.CleanUpFavicons(this.FaviconService.Service.GetIconPath());
+                this.FaviconService.Service.CleanUpFavicons();
             }
 
             Logger.Information("[Favicons] Favicons created or deleted on other machine.");
@@ -237,178 +234,17 @@ namespace EPi.Libraries.Favicons.Business.Initialization
             ContentReference iconReference =
                 this.FaviconService.Service.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
 
-            if (ContentReference.IsNullOrEmpty(iconReference) && this.FaviconService.Service.IconPathExists())
+            if (ContentReference.IsNullOrEmpty(iconReference))
             {
-                this.CleanUpFavicons(this.FaviconService.Service.GetIconPath());
+                this.FaviconService.Service.CleanUpFavicons();
+                this.RaiseEvent(DeleteFavicons);
                 return;
             }
 
-            this.CreateFavicons(iconReference);
-        }
-
-        private void CreateFavicons(ContentReference iconReference)
-        {
-            ImageData iconFile;
-
-            this.ContentRepository.Service.TryGet(iconReference, out iconFile);
-
-            if (iconFile == null)
+            if (this.FaviconService.Service.CreateFavicons(iconReference))
             {
-                Logger.Warning("[Favicons] Icon file not found.");
-                return;
+                this.RaiseEvent(CreateFavicons);
             }
-
-            FileBlob binaryData = iconFile.BinaryData as FileBlob;
-
-            if (binaryData == null)
-            {
-                Logger.Warning("[Favicons] Icon is not a file.");
-                return;
-            }
-
-            string filePath = binaryData.FilePath;
-
-            if (string.IsNullOrWhiteSpace(filePath))
-            {
-                Logger.Warning("[Favicons] Icon file has no path.");
-                return;
-            }
-
-            string iconsPath = this.FaviconService.Service.GetIconPath();
-
-            if (string.IsNullOrWhiteSpace(iconsPath))
-            {
-                return;
-            }
-
-            if (!Directory.Exists(iconsPath))
-            {
-                Directory.CreateDirectory(iconsPath);
-            }
-
-            ImageBuilder imageBuilder = ImageBuilder.Current;
-
-            CreateAppleIcon(filePath, imageBuilder, iconsPath, 57, 57);
-            CreateAppleIcon(filePath, imageBuilder, iconsPath, 60, 60);
-            CreateAppleIcon(filePath, imageBuilder, iconsPath, 72, 72);
-            CreateAppleIcon(filePath, imageBuilder, iconsPath, 76, 76);
-            CreateAppleIcon(filePath, imageBuilder, iconsPath, 114, 114);
-            CreateAppleIcon(filePath, imageBuilder, iconsPath, 120, 120);
-            CreateAppleIcon(filePath, imageBuilder, iconsPath, 144, 144);
-            CreateAppleIcon(filePath, imageBuilder, iconsPath, 152, 152);
-            CreateAppleIcon(filePath, imageBuilder, iconsPath, 180, 180);
-
-            CreateMsTileIcon(filePath, imageBuilder, iconsPath, 70, 70);
-            CreateMsTileIcon(filePath, imageBuilder, iconsPath, 150, 150);
-            CreateMsTileIcon(filePath, imageBuilder, iconsPath, 310, 310);
-            CreateMsTileIcon(filePath, imageBuilder, iconsPath, 310, 150);
-
-            CreateAndroidIcon(filePath, imageBuilder, iconsPath, 36, 36);
-            CreateAndroidIcon(filePath, imageBuilder, iconsPath, 48, 48);
-            CreateAndroidIcon(filePath, imageBuilder, iconsPath, 72, 72);
-            CreateAndroidIcon(filePath, imageBuilder, iconsPath, 96, 96);
-            CreateAndroidIcon(filePath, imageBuilder, iconsPath, 144, 144);
-            CreateAndroidIcon(filePath, imageBuilder, iconsPath, 192, 192);
-
-            CreateFavicon(filePath, imageBuilder, iconsPath, 16, 16);
-            CreateFavicon(filePath, imageBuilder, iconsPath, 32, 32);
-            CreateFavicon(filePath, imageBuilder, iconsPath, 96, 96);
-            CreateFavicon(filePath, imageBuilder, iconsPath, 192, 192);
-
-            this.RaiseEvent(FaviconsCreated);
-        }
-
-        private void CleanUpFavicons(string iconsPath)
-        {
-            if (!this.FaviconService.Service.IconPathExists(iconsPath))
-            {
-                return;
-            }
-
-            Directory.Delete(iconsPath, true);
-
-            this.RaiseEvent(FaviconsDeleted);
-        }
-
-        private static void CreateAppleIcon(
-            string filePath,
-            ImageBuilder imageBuilder,
-            string iconsPath,
-            int width,
-            int height)
-        {
-            imageBuilder.Build(
-                filePath,
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0}/apple-touch-icon-{1}x{2}.png",
-                    iconsPath,
-                    width,
-                    height),
-                new ResizeSettings(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "width={0}&height={1}&crop=auto&format=png",
-                        width,
-                        height)),
-                false);
-        }
-
-        private static void CreateMsTileIcon(
-            string filePath,
-            ImageBuilder imageBuilder,
-            string iconsPath,
-            int width,
-            int height)
-        {
-            imageBuilder.Build(
-                filePath,
-                string.Format(CultureInfo.InvariantCulture, "{0}/mstile-{1}x{2}.png", iconsPath, width, height),
-                new ResizeSettings(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "width={0}&height={1}&crop=auto&format=png",
-                        width,
-                        height)),
-                false);
-        }
-
-        private static void CreateAndroidIcon(
-            string filePath,
-            ImageBuilder imageBuilder,
-            string iconsPath,
-            int width,
-            int height)
-        {
-            imageBuilder.Build(
-                filePath,
-                string.Format(CultureInfo.InvariantCulture, "{0}/android-chrome-{1}x{2}.png", iconsPath, width, height),
-                new ResizeSettings(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "width={0}&height={1}&crop=auto&format=png",
-                        width,
-                        height)),
-                false);
-        }
-
-        private static void CreateFavicon(
-            string filePath,
-            ImageBuilder imageBuilder,
-            string iconsPath,
-            int width,
-            int height)
-        {
-            imageBuilder.Build(
-                filePath,
-                string.Format(CultureInfo.InvariantCulture, "{0}/favicon-{1}x{2}.png", iconsPath, width, height),
-                new ResizeSettings(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "width={0}&height={1}&crop=auto&format=png",
-                        width,
-                        height)),
-                false);
         }
     }
 }

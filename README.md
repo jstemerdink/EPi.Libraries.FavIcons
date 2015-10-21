@@ -32,3 +32,6 @@ Add the following to your header in your _Root,cshtml file to render the markup:
 ```
 
 Enable MVC Attribute Routing, you will need to upgrade to MVC 5+
+
+### Thanks
+to [Rehan Saeed](https://github.com/RehanSaeed/ASP.NET-MVC-Boilerplate) for some of the ideas.

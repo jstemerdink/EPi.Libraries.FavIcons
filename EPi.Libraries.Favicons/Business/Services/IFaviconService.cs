@@ -117,5 +117,17 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// <param name="contentReference">The content reference.</param>
         /// <returns>TO.</returns>
         TO GetPropertyValue<T, TO>(ContentReference contentReference) where T : Attribute where TO : class;
+
+        /// <summary>
+        ///     Creates the favicons.
+        /// </summary>
+        /// <param name="iconReference">The icon reference.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        bool CreateFavicons(ContentReference iconReference);
+
+        /// <summary>
+        ///     Cleans up favicons.
+        /// </summary>
+        void CleanUpFavicons();
     }
 }
