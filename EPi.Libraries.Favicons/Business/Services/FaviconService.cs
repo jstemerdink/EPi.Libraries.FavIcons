@@ -155,7 +155,7 @@ namespace EPi.Libraries.Favicons.Business.Services
             
             JObject document = new JObject(
                 new JProperty("short_name", faviconSettings.ApplicationShortName),
-                new JProperty("name", faviconSettings.ApplicationShortName),
+                new JProperty("name", faviconSettings.ApplicationName),
                 new JProperty(
                     "icons",
                     new JArray(
