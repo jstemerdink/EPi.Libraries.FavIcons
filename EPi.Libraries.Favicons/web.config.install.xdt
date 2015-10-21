@@ -1,0 +1,21 @@
+﻿<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+  <system.web>
+    <caching xdt:Transform="InsertIfMissing"></caching>
+    <caching>
+      <outputCacheSettings xdt:Transform="InsertIfMissing"></outputCacheSettings>
+    </caching>
+    <caching>
+      <outputCacheSettings>
+        <outputCacheProfiles xdt:Transform="InsertIfMissing"></outputCacheProfiles>
+      </outputCacheSettings>
+    </caching>
+  <caching>
+      <outputCacheSettings>
+        <outputCacheProfiles>
+          <add name="BrowserConfigXml" duration="86400" location="Any" varyByParam="none" xdt:Transform="InsertIfMissing" xdt:Locator="Match(name)" />
+          <add name="ManifestJson" duration="86400" location="Any" varyByParam="none" xdt:Transform="InsertIfMissing" xdt:Locator="Match(name)" />
+        </outputCacheProfiles>
+      </outputCacheSettings>
+    </caching>
+  </system.web>
+</configuration>
