@@ -1,4 +1,10 @@
-﻿Add properties to you start page and add the attributes shown below.
+﻿Add the following to your appsettings if you do not want the icons to be generated in "/content/icons/"
+
+<add key="sitesettings:iconroot" value="/path/to/icons/" />
+
+
+
+Add properties to you start page and add the attributes shown below.
 
 [WebsiteIcon]
 [UIHint(UIHint.Image)]
