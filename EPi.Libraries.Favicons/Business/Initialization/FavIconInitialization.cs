@@ -201,6 +201,11 @@ namespace EPi.Libraries.Favicons.Business.Initialization
                     this.FaviconService.Service.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
 
                 this.FaviconService.Service.CreateFavicons(iconReference);
+
+                ContentReference mobileAppIconReference =
+                    this.FaviconService.Service.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
+
+                this.FaviconService.Service.CreateMobileAppicons(mobileAppIconReference);
             }
 
             if (eventMessage.Equals(DeleteFavicons))
@@ -231,18 +236,22 @@ namespace EPi.Libraries.Favicons.Business.Initialization
 
             ContentData contentData = contentEventArgs.Content as ContentData;
 
-            ContentReference iconReference =
+            ContentReference faviconReference =
                 this.FaviconService.Service.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
 
-            if (ContentReference.IsNullOrEmpty(iconReference))
+            if (ContentReference.IsNullOrEmpty(faviconReference))
             {
                 this.FaviconService.Service.CleanUpFavicons();
                 this.RaiseEvent(DeleteFavicons);
                 return;
             }
 
-            if (this.FaviconService.Service.CreateFavicons(iconReference))
+            if (this.FaviconService.Service.CreateFavicons(faviconReference))
             {
+                ContentReference mobileAppIconReference =
+                this.FaviconService.Service.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
+                this.FaviconService.Service.CreateMobileAppicons(mobileAppIconReference);
+
                 this.RaiseEvent(CreateFavicons);
             }
         }

@@ -1,14 +1,12 @@
-﻿Add the following to your appsettings if you do not want the icons to be generated in "/content/icons/"
-
-<add key="sitesettings:iconroot" value="/path/to/icons/" />
-
-
-
-Add properties to you start page and add the attributes shown below.
+﻿Add properties to you start page and add the attributes shown below.
 
 [WebsiteIcon]
 [UIHint(UIHint.Image)]
 public virtual ContentReference Favicon { get; set; }
+
+[MobileAppIcon]
+[UIHint(UIHint.Image)]
+public virtual ContentReference AppIcon { get; set; } >> use if your site is webapp capable
 
 [ThemeColor]
 public virtual string ThemeColor { get; set; } >> defaults to "#1E1E1E"

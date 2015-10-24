@@ -24,6 +24,10 @@ Add properties to you start page and add the attributes shown below.
 [UIHint(UIHint.Image)]
 public virtual ContentReference Favicon { get; set; }
 
+[MobileAppIcon]
+[UIHint(UIHint.Image)]
+public virtual ContentReference AppIcon { get; set; } >> use if your site is webapp capable
+
 [ThemeColor]
 public virtual string ThemeColor { get; set; } >> defaults to "#1E1E1E"
 

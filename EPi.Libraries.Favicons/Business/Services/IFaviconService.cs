@@ -114,6 +114,12 @@ namespace EPi.Libraries.Favicons.Business.Services
         bool CreateFavicons(ContentReference iconReference);
 
         /// <summary>
+        /// Creates the mobile appicons.
+        /// </summary>
+        /// <param name="iconReference">The icon reference.</param>
+        void CreateMobileAppicons(ContentReference iconReference);
+
+        /// <summary>
         ///     Cleans up favicons.
         /// </summary>
         void CleanUpFavicons();

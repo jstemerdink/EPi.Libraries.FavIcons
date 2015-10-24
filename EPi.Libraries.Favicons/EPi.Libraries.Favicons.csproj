@@ -197,6 +197,7 @@
     <Compile Include="Attributes\ApplicationNameAttribute.cs" />
     <Compile Include="Attributes\ThemeColorAttribute.cs" />
     <Compile Include="Attributes\TileColorAttribute.cs" />
+    <Compile Include="Attributes\MobileAppIconAttribute.cs" />
     <Compile Include="Attributes\WebsiteIconAttribute.cs" />
     <Compile Include="Business\Services\FaviconService.cs" />
     <Compile Include="Business\Services\IFaviconService.cs" />
