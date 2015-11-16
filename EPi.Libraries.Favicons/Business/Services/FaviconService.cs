@@ -315,7 +315,7 @@ namespace EPi.Libraries.Favicons.Business.Services
             string faviconsPath = this.GetVirtualIconPath();
             ContentReference faviconReference = this.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
             ContentReference mobileAppIconReference =
-                    this.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
+                    this.GetPropertyValue<MobileAppIconAttribute, ContentReference>(contentData);
 
             faviconSettings = new FaviconSettings
                                   {
