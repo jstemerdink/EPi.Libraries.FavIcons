@@ -1,7 +1,6 @@
 ﻿@using EPi.Libraries.Favicons.Business.Services
 @using EPi.Libraries.Favicons.Models
 @using EPiServer.ServiceLocation
-@using EPiServer.Web
 
 @{
     FaviconSettings faviconSettings = new FaviconSettings();
@@ -29,12 +28,32 @@
     <link rel="apple-touch-icon" sizes="152x152" href="@iconPath/apple-touch-icon-152x152.png">
     <link rel="apple-touch-icon" sizes="180x180" href="@iconPath/apple-touch-icon-180x180.png">
     <meta name="apple-mobile-web-app-title" content="@faviconSettings.ApplicationName">
+
+    if (faviconSettings.MobileWebAppCapable)
+    {
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="apple-touch-startup-image" href="@iconPath/apple-touch-startup-image-1536x2008.png" media="(device-width: 768px) and (device-height: 1024px) and (orientation: portrait) and (-webkit-device-pixel-ratio: 2)">
+        <link rel="apple-touch-startup-image" href="@iconPath/apple-touch-startup-image-1496x2048.png" media="(device-width: 768px) and (device-height: 1024px) and (orientation: landscape) and (-webkit-device-pixel-ratio: 2)">
+        <link rel="apple-touch-startup-image" href="@iconPath/apple-touch-startup-image-768x1004.png" media="(device-width: 768px) and (device-height: 1024px) and (orientation: portrait) and (-webkit-device-pixel-ratio: 1)">
+        <link rel="apple-touch-startup-image" href="@iconPath/apple-touch-startup-image-748x1024.png" media="(device-width: 768px) and (device-height: 1024px) and (orientation: landscape) and (-webkit-device-pixel-ratio: 1)">
+        <link rel="apple-touch-startup-image" href="@iconPath/apple-touch-startup-image-640x1096.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
+        <link rel="apple-touch-startup-image" href="@iconPath/apple-touch-startup-image-640x920.png" media="(device-width: 320px) and (device-height: 480px) and (-webkit-device-pixel-ratio: 2)">
+        <link rel="apple-touch-startup-image" href="@iconPath/apple-touch-startup-image-320x460.png" media="(device-width: 320px) and (device-height: 480px) and (-webkit-device-pixel-ratio: 1)">
+    }
+
+
     <link rel="icon" type="image/png" href="@iconPath/favicon-32x32.png" sizes="32x32">
     <link rel="icon" type="image/png" href="@iconPath/favicon-192x192.png" sizes="192x192">
     <link rel="icon" type="image/png" href="@iconPath/favicon-96x96.png" sizes="96x96">
     <link rel="icon" type="image/png" href="@iconPath/favicon-16x16.png" sizes="16x16">
     <link rel="manifest" href="@Url.RouteUrl("GetManifestJson")">
     <meta name="theme-color" content="@faviconSettings.ThemeColor">
+    
+    if (faviconSettings.MobileWebAppCapable)
+    {
+        <meta name="mobile-web-app-capable" content="yes">
+    }
+
     <meta name="application-name" content="@faviconSettings.ApplicationName">
     <meta name="msapplication-TileColor" content="@faviconSettings.TileColor">
     <meta name="msapplication-TileImage" content="@iconPath/mstile-144x144.png">
