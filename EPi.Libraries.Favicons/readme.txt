@@ -22,7 +22,7 @@ public virtual string ApplicationShortName { get; set; } >> defaults to the name
 
 
 
-Add the following to your header in your _Root,cshtml file to render the markup:
+Add the following to your header in your _Root.cshtml file to render the markup:
 
 @{ Html.RenderPartial("Favicons");}
 

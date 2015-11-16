@@ -1,4 +1,4 @@
-﻿// Copyright© 2015 Jeroen Stemerdink. 
+﻿// Copyright © 2015 Jeroen Stemerdink. 
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -104,7 +104,7 @@ namespace EPi.Libraries.Favicons.Business.Initialization
         /// <remarks>
         ///     Gets called as part of the EPiServer Framework initialization sequence. Note that it will be called
         ///     only once per AppDomain, unless the method throws an exception. If an exception is thrown, the initialization
-        ///     method will be called repeadetly for each request reaching the site until the method succeeds.
+        ///     method will be called repeatedly for each request reaching the site until the method succeeds.
         /// </remarks>
         public void Initialize(InitializationEngine context)
         {
@@ -125,7 +125,7 @@ namespace EPi.Libraries.Favicons.Business.Initialization
             //Add initialization logic, this method is called once after CMS has been initialized
             this.ContentEvents.Service.PublishedContent += this.ServiceOnPublishedContent;
 
-            // Make sure the RemoteCacheSynchronization event is registered before the custome event.
+            // Make sure the RemoteCacheSynchronization event is registered before the custom event.
             this.EventService.Service.Get(RemoteCacheSynchronization.RemoveFromCacheEventId);
 
             // Attach a custom event to create the icons on another server, eg. in LoadBalanced environments.
