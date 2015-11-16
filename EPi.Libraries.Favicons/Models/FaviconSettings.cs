@@ -1,4 +1,4 @@
-﻿// Copyright© 2015 Jeroen Stemerdink. 
+﻿// Copyright © 2015 Jeroen Stemerdink. 
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -63,5 +63,11 @@ namespace EPi.Libraries.Favicons.Models
         /// </summary>
         /// <value>The short name of the application.</value>
         public string ApplicationShortName { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [mobile web application capable].
+        /// </summary>
+        /// <value><c>true</c> if [mobile web application capable]; otherwise, <c>false</c>.</value>
+        public bool MobileWebAppCapable { get; set; }
     }
 }

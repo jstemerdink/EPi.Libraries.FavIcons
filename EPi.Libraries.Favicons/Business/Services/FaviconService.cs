@@ -1,4 +1,4 @@
-﻿// Copyright© 2015 Jeroen Stemerdink. 
+﻿// Copyright © 2015 Jeroen Stemerdink. 
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -155,7 +155,7 @@ namespace EPi.Libraries.Favicons.Business.Services
             
             JObject document = new JObject(
                 new JProperty("short_name", faviconSettings.ApplicationShortName),
-                new JProperty("name", faviconSettings.ApplicationName),
+                new JProperty("name", faviconSettings.ApplicationShortName),
                 new JProperty(
                     "icons",
                     new JArray(
@@ -314,6 +314,8 @@ namespace EPi.Libraries.Favicons.Business.Services
             string tileColor = this.GetPropertyValue<TileColorAttribute, string>(contentData);
             string faviconsPath = this.GetVirtualIconPath();
             ContentReference faviconReference = this.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
+            ContentReference mobileAppIconReference =
+                    this.GetPropertyValue<MobileAppIconAttribute, ContentReference>(contentData);
 
             faviconSettings = new FaviconSettings
                                   {
@@ -322,7 +324,8 @@ namespace EPi.Libraries.Favicons.Business.Services
                                       DisplayFavicons = !ContentReference.IsNullOrEmpty(faviconReference),
                                       FaviconsPath = faviconsPath,
                                       ApplicationName = string.IsNullOrWhiteSpace(applicationName) ? SiteDefinition.Current.Name : applicationName,
-                                      ApplicationShortName = string.IsNullOrWhiteSpace(applicationShortName) ? SiteDefinition.Current.Name : applicationShortName
+                                      ApplicationShortName = string.IsNullOrWhiteSpace(applicationShortName) ? SiteDefinition.Current.Name : applicationShortName,
+                                      MobileWebAppCapable = !ContentReference.IsNullOrEmpty(mobileAppIconReference)
                                   };
 
             CacheEvictionPolicy cacheEvictionPolicy =
@@ -380,42 +383,18 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         public bool CreateFavicons(ContentReference iconReference)
         {
-            ImageData iconFile;
+            string filePath;
 
-            this.ContentRepository.Service.TryGet(iconReference, out iconFile);
-
-            if (iconFile == null)
-            {
-                Logger.Warning("[Favicons] Icon file not found.");
-                return false;
-            }
-
-            FileBlob binaryData = iconFile.BinaryData as FileBlob;
-
-            if (binaryData == null)
-            {
-                Logger.Warning("[Favicons] Icon is not a file.");
-                return false;
-            }
-
-            string filePath = binaryData.FilePath;
-
-            if (string.IsNullOrWhiteSpace(filePath))
-            {
-                Logger.Warning("[Favicons] Icon file has no path.");
-                return false;
-            }
-
-            string iconsPath = this.GetIconPath();
-
-            if (string.IsNullOrWhiteSpace(iconsPath))
+            if (!this.GetFilePath(iconReference, out filePath))
             {
                 return false;
             }
 
-            if (!Directory.Exists(iconsPath))
+            string iconsPath;
+
+            if (!this.GetOrCreateIconPath(out iconsPath))
             {
-                Directory.CreateDirectory(iconsPath);
+                return false;
             }
 
             ImageBuilder imageBuilder = ImageBuilder.Current;
@@ -447,6 +426,87 @@ namespace EPi.Libraries.Favicons.Business.Services
             CreateFavicon(filePath, imageBuilder, iconsPath, 96, 96);
             CreateFavicon(filePath, imageBuilder, iconsPath, 192, 192);
 
+            return true;
+        }
+
+        /// <summary>
+        ///     Creates the favicons.
+        /// </summary>
+        /// <param name="iconReference">The icon reference.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        public void CreateMobileAppicons(ContentReference iconReference)
+        {
+            string filePath;
+
+            if (!this.GetFilePath(iconReference, out filePath))
+            {
+                return;
+            }
+
+            string iconsPath;
+
+            if (!this.GetOrCreateIconPath(out iconsPath))
+            {
+                return;
+            }
+
+            ImageBuilder imageBuilder = ImageBuilder.Current;
+
+            CreateAppleStartupIcon(filePath, imageBuilder, iconsPath, 1536, 2008);
+            CreateAppleStartupIcon(filePath, imageBuilder, iconsPath, 1496, 2048);
+            CreateAppleStartupIcon(filePath, imageBuilder, iconsPath, 768, 1004);
+            CreateAppleStartupIcon(filePath, imageBuilder, iconsPath, 748, 1024);
+            CreateAppleStartupIcon(filePath, imageBuilder, iconsPath, 640, 1096);
+            CreateAppleStartupIcon(filePath, imageBuilder, iconsPath, 640, 920);
+            CreateAppleStartupIcon(filePath, imageBuilder, iconsPath, 320, 460);
+        }
+
+        private bool GetOrCreateIconPath(out string iconsPath)
+        {
+            iconsPath = this.GetIconPath();
+
+            if (string.IsNullOrWhiteSpace(iconsPath))
+            {
+                return false;
+            }
+
+            if (!Directory.Exists(iconsPath))
+            {
+                Directory.CreateDirectory(iconsPath);
+            }
+
+            return true;
+        }
+
+        private bool GetFilePath(ContentReference iconReference, out string filePath)
+        {
+            filePath = string.Empty;
+
+            ImageData iconFile;
+
+            this.ContentRepository.Service.TryGet(iconReference, out iconFile);
+
+            if (iconFile == null)
+            {
+                Logger.Warning("[Favicons] Icon file not found.");
+                return false;
+            }
+
+            FileBlob binaryData = iconFile.BinaryData as FileBlob;
+
+            if (binaryData == null)
+            {
+                Logger.Warning("[Favicons] Icon is not a file.");
+                return false;
+            }
+
+            filePath = binaryData.FilePath;
+
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                Logger.Warning("[Favicons] Icon file has no path.");
+                return false;
+            }
             return true;
         }
 
@@ -522,6 +582,29 @@ namespace EPi.Libraries.Favicons.Business.Services
                 string.Format(
                     CultureInfo.InvariantCulture,
                     "{0}/apple-touch-icon-{1}x{2}.png",
+                    iconsPath,
+                    width,
+                    height),
+                new ResizeSettings(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "width={0}&height={1}&crop=auto&format=png",
+                        width,
+                        height)),
+                false);
+        }
+
+        private static void CreateAppleStartupIcon(string filePath,
+            ImageBuilder imageBuilder,
+            string iconsPath,
+            int width,
+            int height)
+        {
+            imageBuilder.Build(
+                filePath,
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0}/apple-touch-startup-image-{1}x{2}.png",
                     iconsPath,
                     width,
                     height),
