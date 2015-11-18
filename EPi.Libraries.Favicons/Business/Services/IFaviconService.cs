@@ -64,25 +64,6 @@ namespace EPi.Libraries.Favicons.Business.Services
         string GetVirtualIconPath();
 
         /// <summary>
-        ///     Gets the icon path.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        string GetIconPath();
-
-        /// <summary>
-        ///     Checks if the icon path exists.
-        /// </summary>
-        /// <returns><c>true</c> if the icon path exists, <c>false</c> otherwise.</returns>
-        bool IconPathExists();
-
-        /// <summary>
-        ///     Checks if the icon path exists.
-        /// </summary>
-        /// <param name="iconsPath">The icons path.</param>
-        /// <returns><c>true</c> if the icon path exists, <c>false</c> otherwise.</returns>
-        bool IconPathExists(string iconsPath);
-
-        /// <summary>
         ///     Gets the favicon settings.
         /// </summary>
         /// <returns>FaviconSettings.</returns>
@@ -114,7 +95,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         bool CreateFavicons(ContentReference iconReference);
 
         /// <summary>
-        /// Creates the mobile appicons.
+        /// Creates the mobile app icons.
         /// </summary>
         /// <param name="iconReference">The icon reference.</param>
         void CreateMobileAppicons(ContentReference iconReference);
@@ -123,5 +104,10 @@ namespace EPi.Libraries.Favicons.Business.Services
         ///     Cleans up favicons.
         /// </summary>
         void CleanUpFavicons();
+
+        /// <summary>
+        /// Deletes the favicons.
+        /// </summary>
+        void DeleteFavicons();
     }
 }
