@@ -249,7 +249,7 @@ namespace EPi.Libraries.Favicons.Business.Initialization
             if (this.FaviconService.Service.CreateFavicons(faviconReference))
             {
                 ContentReference mobileAppIconReference =
-                this.FaviconService.Service.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
+                this.FaviconService.Service.GetPropertyValue<MobileAppIconAttribute, ContentReference>(contentData);
                 this.FaviconService.Service.CreateMobileAppicons(mobileAppIconReference);
 
                 this.RaiseEvent(CreateFavicons);
