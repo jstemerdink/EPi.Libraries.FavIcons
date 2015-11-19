@@ -1,4 +1,4 @@
-// Copyright© 2015 Jeroen Stemerdink. 
+// Copyright © 2015 Jeroen Stemerdink. 
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -95,7 +95,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         bool CreateFavicons(ContentReference iconReference);
 
         /// <summary>
-        /// Creates the mobile app icons.
+        ///     Creates the mobile app icons.
         /// </summary>
         /// <param name="iconReference">The icon reference.</param>
         void CreateMobileAppicons(ContentReference iconReference);
@@ -106,7 +106,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         void CleanUpFavicons();
 
         /// <summary>
-        /// Deletes the favicons.
+        ///     Deletes the favicons.
         /// </summary>
         void DeleteFavicons();
     }

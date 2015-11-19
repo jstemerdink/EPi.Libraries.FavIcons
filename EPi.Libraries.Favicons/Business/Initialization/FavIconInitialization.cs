@@ -163,12 +163,14 @@ namespace EPi.Libraries.Favicons.Business.Initialization
             // Remove the icons. More efficient than getting them one by one and updating them.
             this.FaviconService.Service.CleanUpFavicons();
 
-            if (this.FaviconService.Service.CreateFavicons(faviconReference))
+            if (!this.FaviconService.Service.CreateFavicons(faviconReference))
             {
-                ContentReference mobileAppIconReference =
-                    this.FaviconService.Service.GetPropertyValue<MobileAppIconAttribute, ContentReference>(contentData);
-                this.FaviconService.Service.CreateMobileAppicons(mobileAppIconReference);
+                return;
             }
+
+            ContentReference mobileAppIconReference =
+                this.FaviconService.Service.GetPropertyValue<MobileAppIconAttribute, ContentReference>(contentData);
+            this.FaviconService.Service.CreateMobileAppicons(mobileAppIconReference);
         }
     }
 }

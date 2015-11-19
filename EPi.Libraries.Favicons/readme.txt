@@ -27,3 +27,5 @@ Add the following to your header in your _Root.cshtml file to render the markup:
 @{ Html.RenderPartial("Favicons");}
 
 Don't forget to enable MVC Attribute routing. ( RouteTable.Routes.MapMvcAttributeRoutes(); )
+
+NOTE: If you are updating from version 1.2, please republish the startpage with the icons. They will be stored as Blobs from now on, which is much cleaner and better suited for Azure.
