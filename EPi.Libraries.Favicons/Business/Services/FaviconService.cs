@@ -22,6 +22,7 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -74,6 +75,12 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// </summary>
         /// <value>The content type repository.</value>
         private Injected<IContentTypeRepository> ContentTypeRepository { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content model usage.
+        /// </summary>
+        /// <value>The content model usage.</value>
+        private Injected<IContentModelUsage> ContentModelUsage { get; set; }
 
         /// <summary>
         ///     Gets or sets the content media resolver.
@@ -282,6 +289,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         ///     Gets the favicon settings.
         /// </summary>
         /// <returns>FaviconSettings.</returns>
+        /// <exception cref="InvalidOperationException">[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .</exception>
         public FaviconSettings GetFaviconSettings()
         {
             const string FaviconCacheKey = "FaviconSettings";
@@ -295,7 +303,23 @@ namespace EPi.Libraries.Favicons.Business.Services
             }
 
             ContentData contentData;
-            this.ContentRepository.Service.TryGet(SiteDefinition.Current.StartPage, out contentData);
+            
+
+            ContentType type = this.ContentTypeRepository.Service.List().FirstOrDefault(c => HasAttribute<ContainsSettingsAttribute>(c.ModelType));
+            
+            if (type == null)
+            {
+                throw new InvalidOperationException("[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .");
+            }
+
+            ContentUsage settingsUsage = this.ContentModelUsage.Service.ListContentOfContentType(type).FirstOrDefault();
+
+            if (settingsUsage == null)
+            {
+                throw new InvalidOperationException("[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .");
+            }
+
+            this.ContentRepository.Service.TryGet(settingsUsage.ContentLink, out contentData);
 
             string applicationName = this.GetPropertyValue<ApplicationNameAttribute, string>(contentData);
             string applicationShortName = this.GetPropertyValue<ApplicationShortNameAttribute, string>(contentData);
@@ -376,6 +400,16 @@ namespace EPi.Libraries.Favicons.Business.Services
             this.ContentRepository.Service.TryGet(contentReference, out contentData);
 
             return contentData == null ? default(TO) : this.GetPropertyValue<T, TO>(contentData);
+        }
+
+        /// <summary>
+        /// Determines whether the specified content data has settings.
+        /// </summary>
+        /// <param name="contentData">The content data.</param>
+        /// <returns><c>true</c> if the specified content data has settings; otherwise, <c>false</c>.</returns>
+        public bool HasSettings(ContentData contentData)
+        {
+            return contentData != null && HasAttribute<ContainsSettingsAttribute>(contentData.GetType());
         }
 
         /// <summary>
@@ -613,6 +647,27 @@ namespace EPi.Libraries.Favicons.Business.Services
             try
             {
                 attr = (T)Attribute.GetCustomAttribute(propertyInfo, typeof(T));
+            }
+            catch (Exception)
+            {
+            }
+
+            return attr != null;
+        }
+
+        /// <summary>
+        /// Determines whether the specified member information has attribute.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="memberInfo">The member information.</param>
+        /// <returns><c>true</c> if the specified member information has attribute; otherwise, <c>false</c>.</returns>
+        private static bool HasAttribute<T>(MemberInfo memberInfo) where T : Attribute
+        {
+            T attr = default(T);
+
+            try
+            {
+                attr = (T)Attribute.GetCustomAttribute(memberInfo, typeof(T));
             }
             catch (Exception)
             {

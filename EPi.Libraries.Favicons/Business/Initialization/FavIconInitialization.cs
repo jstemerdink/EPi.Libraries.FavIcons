@@ -21,11 +21,14 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
+using System.Reflection;
+
 using EPi.Libraries.Favicons.Attributes;
 using EPi.Libraries.Favicons.Business.Services;
 
 using EPiServer;
 using EPiServer.Core;
+using EPiServer.DataAbstraction;
 using EPiServer.Framework;
 using EPiServer.Framework.Initialization;
 using EPiServer.Logging;
@@ -144,12 +147,17 @@ namespace EPi.Libraries.Favicons.Business.Initialization
                 return;
             }
 
-            if (contentEventArgs.ContentLink.ID != ContentReference.StartPage.ID)
+            ContentData contentData = contentEventArgs.Content as ContentData;
+
+            if (contentData == null)
             {
                 return;
             }
 
-            ContentData contentData = contentEventArgs.Content as ContentData;
+            if (!this.FaviconService.Service.HasSettings(contentData))
+            {
+                return;
+            }
 
             ContentReference faviconReference =
                 this.FaviconService.Service.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);

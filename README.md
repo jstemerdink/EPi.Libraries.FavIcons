@@ -11,7 +11,7 @@ By Jeroen Stemerdink
 
 ## Instructions
 
-Add properties to you start page and add the attributes shown below.
+Add properties to the ContentType you use for your settings and add the attributes shown below.
 
 ```
 [WebsiteIcon]
@@ -33,6 +33,12 @@ public virtual string ApplicationName { get; set; } >> defaults to the name in t
 
 [ApplicationShortName]
 public virtual string ApplicationShortName { get; set; } >> defaults to the name in the site definition
+```
+
+Add the following attribute to the ContentType you use for your settings
+
+```
+[ContainsSettings]
 ```
 
 Add the following to your header in your _Root,cshtml file to render the markup:

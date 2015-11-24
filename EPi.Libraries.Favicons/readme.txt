@@ -1,4 +1,7 @@
-﻿Add properties to you start page and add the attributes shown below.
+﻿NOTE: If you are updating from version 1.2, please republish the startpage with the icons. And add the ContainsSettings attribute to it.
+They will be stored as Blobs from now on, which is much cleaner and better suited for Azure.
+
+Add properties to the ContentType you use for your settings and add the attributes shown below.
 
 [WebsiteIcon]
 [UIHint(UIHint.Image)]
@@ -22,10 +25,16 @@ public virtual string ApplicationShortName { get; set; } >> defaults to the name
 
 
 
+Add the following attribute to the ContentType you use for your settings
+
+[ContainsSettings]
+
+
 Add the following to your header in your _Root.cshtml file to render the markup:
 
 @{ Html.RenderPartial("Favicons");}
 
+
+
 Don't forget to enable MVC Attribute routing. ( RouteTable.Routes.MapMvcAttributeRoutes(); )
 
-NOTE: If you are updating from version 1.2, please republish the startpage with the icons. They will be stored as Blobs from now on, which is much cleaner and better suited for Azure.
