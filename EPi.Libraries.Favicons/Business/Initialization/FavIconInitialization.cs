@@ -21,20 +21,18 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-using System;
+using System.Reflection;
 
 using EPi.Libraries.Favicons.Attributes;
 using EPi.Libraries.Favicons.Business.Services;
 
 using EPiServer;
 using EPiServer.Core;
-using EPiServer.Events;
-using EPiServer.Events.Clients;
+using EPiServer.DataAbstraction;
 using EPiServer.Framework;
 using EPiServer.Framework.Initialization;
 using EPiServer.Logging;
 using EPiServer.ServiceLocation;
-using EPiServer.Web;
 
 using InitializationModule = EPiServer.Web.InitializationModule;
 
@@ -47,22 +45,6 @@ namespace EPi.Libraries.Favicons.Business.Initialization
     [ModuleDependency(typeof(InitializationModule))]
     public class FaviconInitialization : IInitializableModule
     {
-        /// <summary>
-        ///     CreateFavicons
-        /// </summary>
-        private const string CreateFavicons = "CreateFavicons";
-
-        /// <summary>
-        ///     DeleteFavicons
-        /// </summary>
-        private const string DeleteFavicons = "DeleteFavicons";
-
-        // Generate unique id for the raiser.
-        private static readonly Guid FaviconRaiserId = new Guid("8bc36f59-3167-4859-aa5d-61ef76a999de");
-
-        // Generate unique id for the reload event.
-        private static readonly Guid FaviconUpdatedEventId = new Guid("ad76bc78-0d3b-4049-a8da-a90a0d035e26");
-
         /// <summary>
         ///     The logger
         /// </summary>
@@ -78,18 +60,6 @@ namespace EPi.Libraries.Favicons.Business.Initialization
         /// </summary>
         /// <value>The content events.</value>
         private Injected<IContentEvents> ContentEvents { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the event service.
-        /// </summary>
-        /// <value>The event service.</value>
-        private Injected<IEventRegistry> EventService { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the content repository.
-        /// </summary>
-        /// <value>The content repository.</value>
-        private Injected<IContentRepository> ContentRepository { get; set; }
 
         /// <summary>
         ///     Gets or sets the favicon service.
@@ -124,13 +94,6 @@ namespace EPi.Libraries.Favicons.Business.Initialization
 
             //Add initialization logic, this method is called once after CMS has been initialized
             this.ContentEvents.Service.PublishedContent += this.ServiceOnPublishedContent;
-
-            // Make sure the RemoteCacheSynchronization event is registered before the custom event.
-            this.EventService.Service.Get(RemoteCacheSynchronization.RemoveFromCacheEventId);
-
-            // Attach a custom event to create the icons on another server, eg. in LoadBalanced environments.
-            Event faviconssUpdated = this.EventService.Service.Get(FaviconUpdatedEventId);
-            faviconssUpdated.Raised += this.FaviconsUpdatedEventRaised;
 
             initialized = true;
 
@@ -177,51 +140,6 @@ namespace EPi.Libraries.Favicons.Business.Initialization
             Logger.Information("[Favicons] Favicons functionality uninitialized.");
         }
 
-        private void FaviconsUpdatedEventRaised(object sender, EventNotificationEventArgs e)
-        {
-            // We don't want to process events raised on this machine so we will check the raiser id.
-            if (e.RaiserId == FaviconRaiserId)
-            {
-                return;
-            }
-
-            string eventMessage = e.Param as string;
-
-            if (string.IsNullOrWhiteSpace(eventMessage))
-            {
-                return;
-            }
-
-            if (eventMessage.Equals(CreateFavicons))
-            {
-                ContentData contentData;
-                this.ContentRepository.Service.TryGet(SiteDefinition.Current.StartPage, out contentData);
-
-                ContentReference iconReference =
-                    this.FaviconService.Service.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
-
-                this.FaviconService.Service.CreateFavicons(iconReference);
-
-                ContentReference mobileAppIconReference =
-                    this.FaviconService.Service.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
-
-                this.FaviconService.Service.CreateMobileAppicons(mobileAppIconReference);
-            }
-
-            if (eventMessage.Equals(DeleteFavicons))
-            {
-                this.FaviconService.Service.CleanUpFavicons();
-            }
-
-            Logger.Information("[Favicons] Favicons created or deleted on other machine.");
-        }
-
-        private void RaiseEvent(string message)
-        {
-            // Raise the FaviconsUpdated event.
-            this.EventService.Service.Get(FaviconUpdatedEventId).Raise(FaviconRaiserId, message);
-        }
-
         private void ServiceOnPublishedContent(object sender, ContentEventArgs contentEventArgs)
         {
             if (contentEventArgs == null)
@@ -229,31 +147,39 @@ namespace EPi.Libraries.Favicons.Business.Initialization
                 return;
             }
 
-            if (contentEventArgs.ContentLink.ID != ContentReference.StartPage.ID)
+            ContentData contentData = contentEventArgs.Content as ContentData;
+
+            if (contentData == null)
             {
                 return;
             }
 
-            ContentData contentData = contentEventArgs.Content as ContentData;
+            if (!this.FaviconService.Service.HasSettings(contentData))
+            {
+                return;
+            }
 
             ContentReference faviconReference =
                 this.FaviconService.Service.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
 
             if (ContentReference.IsNullOrEmpty(faviconReference))
             {
-                this.FaviconService.Service.CleanUpFavicons();
-                this.RaiseEvent(DeleteFavicons);
+                this.FaviconService.Service.DeleteFavicons();
                 return;
             }
 
-            if (this.FaviconService.Service.CreateFavicons(faviconReference))
-            {
-                ContentReference mobileAppIconReference =
-                this.FaviconService.Service.GetPropertyValue<MobileAppIconAttribute, ContentReference>(contentData);
-                this.FaviconService.Service.CreateMobileAppicons(mobileAppIconReference);
+            // Remove the icons. More efficient than getting them one by one and updating them.
+            this.FaviconService.Service.CleanUpFavicons();
 
-                this.RaiseEvent(CreateFavicons);
+            if (!this.FaviconService.Service.CreateFavicons(faviconReference))
+            {
+                return;
             }
+
+            ContentReference mobileAppIconReference =
+                this.FaviconService.Service.GetPropertyValue<MobileAppIconAttribute, ContentReference>(contentData);
+
+            this.FaviconService.Service.CreateMobileAppicons(mobileAppIconReference);
         }
     }
 }

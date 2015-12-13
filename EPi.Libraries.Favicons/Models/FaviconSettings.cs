@@ -53,19 +53,19 @@ namespace EPi.Libraries.Favicons.Models
         public string FaviconsPath { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the application.
+        ///     Gets or sets the name of the application.
         /// </summary>
         /// <value>The name of the application.</value>
         public string ApplicationName { get; set; }
 
         /// <summary>
-        /// Gets or sets the short name of the application.
+        ///     Gets or sets the short name of the application.
         /// </summary>
         /// <value>The short name of the application.</value>
         public string ApplicationShortName { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [mobile web application capable].
+        ///     Gets or sets a value indicating whether [mobile web application capable].
         /// </summary>
         /// <value><c>true</c> if [mobile web application capable]; otherwise, <c>false</c>.</value>
         public bool MobileWebAppCapable { get; set; }
