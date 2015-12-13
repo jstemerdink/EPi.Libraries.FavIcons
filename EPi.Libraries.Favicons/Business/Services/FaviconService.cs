@@ -261,21 +261,6 @@ namespace EPi.Libraries.Favicons.Business.Services
                 return !ContentReference.IsNullOrEmpty(SiteDefinition.Current.SiteAssetsRoot)
                            ? "siteassets/favicons"
                            : "globalassets/favicons";
-
-                ////ContentReference iconsFolder = this.GetOrCreateFaviconsFolder();
-                ////ImageData image = this.ContentRepository.Service.GetChildren<ImageData>(iconsFolder).FirstOrDefault();
-
-                ////if (image == null)
-                ////{
-                ////    return string.Empty;
-                ////}
-
-                ////Url internalUrl = this.UrlResolver.Service.GetUrl(image.ContentLink);
-
-                ////UrlBuilder url = new UrlBuilder(internalUrl);
-                ////string[] segments = url.Path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-
-                ////return string.Join("/", segments.Length == 3 ? segments.Take(2) : segments.Skip(3).Take(2));
             }
             catch (Exception exception)
             {

@@ -11,6 +11,13 @@ By Jeroen Stemerdink
 
 ## Instructions
 
+Add the following attribute to the ContentType you use for your settings
+
+```
+[ContainsSettings]
+```
+
+
 Add properties to the ContentType you use for your settings and add the attributes shown below.
 
 ```
@@ -35,11 +42,7 @@ public virtual string ApplicationName { get; set; } >> defaults to the name in t
 public virtual string ApplicationShortName { get; set; } >> defaults to the name in the site definition
 ```
 
-Add the following attribute to the ContentType you use for your settings
 
-```
-[ContainsSettings]
-```
 
 Add the following to your header in your _Root,cshtml file to render the markup:
 
