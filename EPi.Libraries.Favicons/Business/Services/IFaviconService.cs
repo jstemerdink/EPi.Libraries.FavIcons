@@ -1,4 +1,4 @@
-// Copyright© 2015 Jeroen Stemerdink. 
+// Copyright © 2015 Jeroen Stemerdink. 
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -22,6 +22,7 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Reflection;
 using System.Web.Routing;
 
 using EPi.Libraries.Favicons.Models;
@@ -87,6 +88,14 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// <returns>TO.</returns>
         TO GetPropertyValue<T, TO>(ContentReference contentReference) where T : Attribute where TO : class;
 
+
+        /// <summary>
+        /// Determines whether the specified content data has settings.
+        /// </summary>
+        /// <param name="contentData">The content data.</param>
+        /// <returns><c>true</c> if the specified content data has settings; otherwise, <c>false</c>.</returns>
+        bool HasSettings(ContentData contentData);
+
         /// <summary>
         ///     Creates the favicons.
         /// </summary>
@@ -95,7 +104,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         bool CreateFavicons(ContentReference iconReference);
 
         /// <summary>
-        /// Creates the mobile app icons.
+        ///     Creates the mobile app icons.
         /// </summary>
         /// <param name="iconReference">The icon reference.</param>
         void CreateMobileAppicons(ContentReference iconReference);
@@ -106,7 +115,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         void CleanUpFavicons();
 
         /// <summary>
-        /// Deletes the favicons.
+        ///     Deletes the favicons.
         /// </summary>
         void DeleteFavicons();
     }

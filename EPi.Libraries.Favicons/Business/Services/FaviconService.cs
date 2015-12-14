@@ -22,6 +22,7 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -76,16 +77,16 @@ namespace EPi.Libraries.Favicons.Business.Services
         private Injected<IContentTypeRepository> ContentTypeRepository { get; set; }
 
         /// <summary>
+        /// Gets or sets the content model usage.
+        /// </summary>
+        /// <value>The content model usage.</value>
+        private Injected<IContentModelUsage> ContentModelUsage { get; set; }
+
+        /// <summary>
         ///     Gets or sets the content media resolver.
         /// </summary>
         /// <value>The content media resolver.</value>
         private Injected<ContentMediaResolver> ContentMediaResolver { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the URL resolver.
-        /// </summary>
-        /// <value>The URL resolver.</value>
-        private Injected<UrlResolver> UrlResolver { get; set; }
 
         /// <summary>
         ///     Gets or sets the BLOB factory.
@@ -257,22 +258,9 @@ namespace EPi.Libraries.Favicons.Business.Services
             try
             {
                 // As you apparently cannot get the url for a folder, just return the hard coded path.
-                return !ContentReference.IsNullOrEmpty(SiteDefinition.Current.SiteAssetsRoot) ? "siteassets/favicons" : "globalassets/favicons";
-
-                ////ContentReference iconsFolder = this.GetOrCreateFaviconsFolder();
-                ////ImageData image = this.ContentRepository.Service.GetChildren<ImageData>(iconsFolder).FirstOrDefault();
-
-                ////if (image == null)
-                ////{
-                ////    return string.Empty;
-                ////}
-
-                ////Url internalUrl = this.UrlResolver.Service.GetUrl(image.ContentLink);
-
-                ////UrlBuilder url = new UrlBuilder(internalUrl);
-                ////string[] segments = url.Path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-
-                ////return string.Join("/", segments.Length == 3 ? segments.Take(2) : segments.Skip(3).Take(2));
+                return !ContentReference.IsNullOrEmpty(SiteDefinition.Current.SiteAssetsRoot)
+                           ? "siteassets/favicons"
+                           : "globalassets/favicons";
             }
             catch (Exception exception)
             {
@@ -286,6 +274,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         ///     Gets the favicon settings.
         /// </summary>
         /// <returns>FaviconSettings.</returns>
+        /// <exception cref="InvalidOperationException">[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .</exception>
         public FaviconSettings GetFaviconSettings()
         {
             const string FaviconCacheKey = "FaviconSettings";
@@ -299,7 +288,23 @@ namespace EPi.Libraries.Favicons.Business.Services
             }
 
             ContentData contentData;
-            this.ContentRepository.Service.TryGet(SiteDefinition.Current.StartPage, out contentData);
+            
+
+            ContentType type = this.ContentTypeRepository.Service.List().FirstOrDefault(c => HasAttribute<ContainsSettingsAttribute>(c.ModelType));
+            
+            if (type == null)
+            {
+                throw new InvalidOperationException("[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .");
+            }
+
+            ContentUsage settingsUsage = this.ContentModelUsage.Service.ListContentOfContentType(type).FirstOrDefault();
+
+            if (settingsUsage == null)
+            {
+                throw new InvalidOperationException("[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .");
+            }
+
+            this.ContentRepository.Service.TryGet(settingsUsage.ContentLink, out contentData);
 
             string applicationName = this.GetPropertyValue<ApplicationNameAttribute, string>(contentData);
             string applicationShortName = this.GetPropertyValue<ApplicationShortNameAttribute, string>(contentData);
@@ -383,6 +388,16 @@ namespace EPi.Libraries.Favicons.Business.Services
         }
 
         /// <summary>
+        /// Determines whether the specified content data has settings.
+        /// </summary>
+        /// <param name="contentData">The content data.</param>
+        /// <returns><c>true</c> if the specified content data has settings; otherwise, <c>false</c>.</returns>
+        public bool HasSettings(ContentData contentData)
+        {
+            return contentData != null && HasAttribute<ContainsSettingsAttribute>(contentData.GetType());
+        }
+
+        /// <summary>
         ///     Creates the favicons.
         /// </summary>
         /// <param name="iconReference">The icon reference.</param>
@@ -396,8 +411,17 @@ namespace EPi.Libraries.Favicons.Business.Services
 
             ContentReference rootfolder = this.GetOrCreateFaviconsFolder();
 
-            ////ImageData file1 = this.ContentRepository.Service.Get<ImageData>(uploadedIconReference).CreateWritableClone() as ImageData;
-            ImageData faviconImageData = this.ContentRepository.Service.Get<ImageData>(iconReference);
+            if (ContentReference.IsNullOrEmpty(rootfolder))
+            {
+                return false;
+            }
+
+            ImageData faviconImageData;
+
+            if (!this.ContentRepository.Service.TryGet(iconReference, out faviconImageData))
+            {
+                return false;
+            }
 
             using (Stream s = faviconImageData.BinaryData.OpenRead())
             {
@@ -446,8 +470,17 @@ namespace EPi.Libraries.Favicons.Business.Services
 
             ContentReference rootfolder = this.GetOrCreateFaviconsFolder();
 
-            ////ImageData file1 = this.ContentRepository.Service.Get<ImageData>(uploadedIconReference).CreateWritableClone() as ImageData;
-            ImageData faviconImageData = this.ContentRepository.Service.Get<ImageData>(iconReference);
+            if (ContentReference.IsNullOrEmpty(rootfolder))
+            {
+                return;
+            }
+
+            ImageData faviconImageData;
+
+            if (!this.ContentRepository.Service.TryGet(iconReference, out faviconImageData))
+            {
+                return;
+            }
 
             using (Stream s = faviconImageData.BinaryData.OpenRead())
             {
@@ -500,9 +533,9 @@ namespace EPi.Libraries.Favicons.Business.Services
         {
             ContentReference rootFolder = GetAssetsRootFolder();
 
-            ContentReference faviconsFolder = this.GetOrCreateFolder(rootFolder, "Favicons").ContentLink;
+            ContentFolder faviconsFolder = this.GetOrCreateFolder(rootFolder, "Favicons");
 
-            return faviconsFolder;
+            return faviconsFolder == null ? ContentReference.EmptyReference : faviconsFolder.ContentLink;
         }
 
         private static ContentReference GetAssetsRootFolder()
@@ -534,16 +567,32 @@ namespace EPi.Libraries.Favicons.Business.Services
                 return storedFolder;
             }
 
-            ContentFolder parent = this.ContentRepository.Service.Get<ContentFolder>(parentFolder);
-            ContentFolder folder = this.ContentRepository.Service.GetDefault<ContentFolder>(parent.ContentLink);
-            folder.Name = folderName;
+            ContentFolder parent;
 
-            ContentReference folderReference = this.ContentRepository.Service.Save(
+            if (!this.ContentRepository.Service.TryGet(parentFolder, out parent))
+            {
+                return null;
+            }
+
+            try
+            {
+                ContentFolder folder = this.ContentRepository.Service.GetDefault<ContentFolder>(parent.ContentLink);
+                folder.Name = folderName;
+
+                ContentReference folderReference = this.ContentRepository.Service.Save(
                 folder,
                 SaveAction.Publish,
                 AccessLevel.NoAccess);
 
-            return this.ContentRepository.Service.Get<ContentFolder>(folderReference);
+                ContentFolder newFolder;
+
+                return !this.ContentRepository.Service.TryGet(folderReference, out newFolder) ? null : newFolder;
+            }
+            catch (AccessDeniedException accessDeniedException)
+            {
+                Logger.Error("[Favicons] Error creating content folder.", accessDeniedException);
+                return null;
+            }
         }
 
         /// <summary>
@@ -591,6 +640,27 @@ namespace EPi.Libraries.Favicons.Business.Services
             return attr != null;
         }
 
+        /// <summary>
+        /// Determines whether the specified member information has attribute.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="memberInfo">The member information.</param>
+        /// <returns><c>true</c> if the specified member information has attribute; otherwise, <c>false</c>.</returns>
+        private static bool HasAttribute<T>(MemberInfo memberInfo) where T : Attribute
+        {
+            T attr = default(T);
+
+            try
+            {
+                attr = (T)Attribute.GetCustomAttribute(memberInfo, typeof(T));
+            }
+            catch (Exception)
+            {
+            }
+
+            return attr != null;
+        }
+
         private void CreateFavicon(
             ContentReference rootFolder,
             Stream originalFile,
@@ -603,33 +673,42 @@ namespace EPi.Libraries.Favicons.Business.Services
 
             ContentType contentType = this.ContentTypeRepository.Service.Load(mediaType);
 
-            //Get a new empty file data
-            ImageData media = this.ContentRepository.Service.GetDefault<ImageData>(rootFolder, contentType.ID);
-            media.Name = string.Format(CultureInfo.InvariantCulture, "{0}-{1}x{2}.png", filePrefix, width, height);
+            try
+            {
+                //Get a new empty file data
+                ImageData media = this.ContentRepository.Service.GetDefault<ImageData>(rootFolder, contentType.ID);
 
-            //Create a blob in the binary container
-            Blob blob = this.BlobFactory.Service.CreateBlob(media.BinaryDataContainer, ".png");
+                media.Name = string.Format(CultureInfo.InvariantCulture, "{0}-{1}x{2}.png", filePrefix, width, height);
 
-            ImageJob imageJob = new ImageJob(
-                originalFile,
-                blob.OpenWrite(),
-                new Instructions(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "width={0}&height={1}&crop=auto&format=png",
-                        width,
-                        height)))
-                                    {
-                                        ResetSourceStream = true,
-                                        DisposeDestinationStream = true,
-                                        DisposeSourceObject = false
-                                    };
+                //Create a blob in the binary container
+                Blob blob = this.BlobFactory.Service.CreateBlob(media.BinaryDataContainer, ".png");
 
-            imageJob.Build();
+                ImageJob imageJob = new ImageJob(
+                    originalFile,
+                    blob.OpenWrite(),
+                    new Instructions(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "width={0}&height={1}&crop=auto&format=png",
+                            width,
+                            height)))
+                {
+                    ResetSourceStream = true,
+                    DisposeDestinationStream = true,
+                    DisposeSourceObject = false
+                };
 
-            //Assign to file and publish changes
-            media.BinaryData = blob;
-            this.ContentRepository.Service.Save(media, SaveAction.Publish);
+                imageJob.Build();
+
+                //Assign to file and publish changes
+                media.BinaryData = blob;
+                this.ContentRepository.Service.Save(media, SaveAction.Publish);
+            }
+            catch (AccessDeniedException accessDeniedException)
+            {
+                Logger.Error("[Favicons] Error creating icon.", accessDeniedException);
+            }
+            
         }
     }
 }
