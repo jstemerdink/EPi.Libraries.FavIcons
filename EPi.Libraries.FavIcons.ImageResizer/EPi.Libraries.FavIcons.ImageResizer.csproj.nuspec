@@ -10,17 +10,11 @@
     <iconUrl>http://jstemerdink.net/images/js-nuget.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Possible to use a different resizing solution if so desired.</releaseNotes>
+    <releaseNotes></releaseNotes>
     <copyright>Copyright © Jeroen Stemerdink 2016</copyright>
     <tags>icons seo</tags>
     <dependencies>
-      <dependency id="EPiServer.CMS.Core" version="[9.1.0, 10.0)" />
-      <dependency id="Microsoft.AspNet.Mvc" version="[5.2.2, 6.0)" />
+      <dependency id="EPi.Libraries.Favicons" version="[2.0.0, 3.0.0)" />
     </dependencies>
   </metadata>
-  <files>
-    <file src="web.config.install.xdt" target="content" />
-    <file src="web.config.uninstall.xdt" target="content" />
-    <file src="readme.txt" target="" />
-  </files>
 </package>

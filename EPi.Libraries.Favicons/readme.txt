@@ -38,3 +38,5 @@ Add the following to your header in your _Root.cshtml file to render the markup:
 
 Don't forget to enable MVC Attribute routing. ( RouteTable.Routes.MapMvcAttributeRoutes(); )
 
+NOTE: If you are updating from version 1.3, please add EPi.Libraries.FavIcons.ImageResizer to your solution, or implement your own resizing service 
+
