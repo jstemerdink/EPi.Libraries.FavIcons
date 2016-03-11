@@ -24,7 +24,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         ///     Creates the mobile app icons.
         /// </summary>
         /// <param name="iconReference">The icon reference.</param>
-        void CreateMobileAppicons(ContentReference iconReference);
+        void CreateMobileAppIcons(ContentReference iconReference);
 
         /// <summary>
         ///     Cleans up favicons.

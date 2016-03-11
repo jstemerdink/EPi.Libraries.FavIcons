@@ -18,7 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{532C28
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPi.Libraries.FavIcons.ImageResizer", "EPi.Libraries.FavIcons.ImageResizer\EPi.Libraries.FavIcons.ImageResizer.csproj", "{E10B62E4-CB90-4520-8B38-4B9426538BF7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPi.Libraries.Favicons.ImageResizer", "EPi.Libraries.FavIcons.ImageResizer\EPi.Libraries.Favicons.ImageResizer.csproj", "{E10B62E4-CB90-4520-8B38-4B9426538BF7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

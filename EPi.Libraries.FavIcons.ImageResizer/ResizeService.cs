@@ -37,7 +37,7 @@ using EPiServer.ServiceLocation;
 
 using ImageResizer;
 
-namespace EPi.Libraries.FavIcons.ImageResizer
+namespace EPi.Libraries.Favicons.ImageResizer
 {
     /// <summary>
     ///     Class ResizeService.

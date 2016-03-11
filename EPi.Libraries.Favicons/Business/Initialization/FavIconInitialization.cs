@@ -182,7 +182,7 @@ namespace EPi.Libraries.Favicons.Business.Initialization
             ContentReference mobileAppIconReference =
                 this.FaviconService.Service.GetPropertyValue<MobileAppIconAttribute, ContentReference>(contentData);
 
-            this.ResizeService.Service.CreateMobileAppicons(mobileAppIconReference);
+            this.ResizeService.Service.CreateMobileAppIcons(mobileAppIconReference);
         }
     }
 }

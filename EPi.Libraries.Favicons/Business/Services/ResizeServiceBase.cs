@@ -136,7 +136,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// </summary>
         /// <param name="iconReference">The icon reference.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        public virtual void CreateMobileAppicons(ContentReference iconReference)
+        public virtual void CreateMobileAppIcons(ContentReference iconReference)
         {
             if (ContentReference.IsNullOrEmpty(iconReference))
             {

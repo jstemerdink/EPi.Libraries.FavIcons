@@ -7,8 +7,8 @@
     <ProjectGuid>{E10B62E4-CB90-4520-8B38-4B9426538BF7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EPi.Libraries.FavIcons.ImageResizer</RootNamespace>
-    <AssemblyName>EPi.Libraries.FavIcons.ImageResizer</AssemblyName>
+    <RootNamespace>EPi.Libraries.Favicons.ImageResizer</RootNamespace>
+    <AssemblyName>EPi.Libraries.Favicons.ImageResizer</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -23,7 +23,7 @@
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>..\Solution Files\EPiServer.Libraries.ruleset</CodeAnalysisRuleSet>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin\Debug\EPi.Libraries.FavIcons.ImageResizer.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\EPi.Libraries.Favicons.ImageResizer.xml</DocumentationFile>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -35,7 +35,7 @@
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>..\Solution Files\EPiServer.Libraries.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\Release\EPi.Libraries.FavIcons.ImageResizer.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\EPi.Libraries.Favicons.ImageResizer.xml</DocumentationFile>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
@@ -162,6 +162,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResizeService.cs" />
   </ItemGroup>

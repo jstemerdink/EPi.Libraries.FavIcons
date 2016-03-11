@@ -34,7 +34,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Jeroen Stemerdink")]
 [assembly: AssemblyProduct("EPi.Libraries.Favicons")]
-[assembly: AssemblyCopyright("Copyright © Jeroen Stemerdink 2015")]
+[assembly: AssemblyCopyright("Copyright © Jeroen Stemerdink 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
