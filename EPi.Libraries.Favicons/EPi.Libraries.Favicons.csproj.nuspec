@@ -11,7 +11,7 @@
     <iconUrl>http://jstemerdink.net/images/js-nuget.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Possible to use a different resizing solution if so desired.</releaseNotes>
+    <releaseNotes>Possible to use a different resizing solution if so desired. Breaking change: built with 4.5.2</releaseNotes>
     <copyright>Copyright © Jeroen Stemerdink 2016</copyright>
     <tags>icons seo</tags>
     <dependencies>
