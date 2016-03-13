@@ -14,19 +14,19 @@ public virtual ContentReference Favicon { get; set; }
 
 [MobileAppIcon]
 [UIHint(UIHint.Image)]
-public virtual ContentReference AppIcon { get; set; } >> use if your site is webapp capable
+public virtual ContentReference AppIcon { get; set; } // use if your site is webapp capable
 
 [ThemeColor]
-public virtual string ThemeColor { get; set; } >> defaults to "#1E1E1E"
+public virtual string ThemeColor { get; set; } // defaults to "#1E1E1E"
 
 [TileColor]
-public virtual string TileColor { get; set; } >> defaults to "#1E1E1E"
+public virtual string TileColor { get; set; } // defaults to "#1E1E1E"
 
 [ApplicationName]
-public virtual string ApplicationName { get; set; } >> defaults to the name in the site definition
+public virtual string ApplicationName { get; set; } // defaults to the name in the site definition
 
 [ApplicationShortName]
-public virtual string ApplicationShortName { get; set; } >> defaults to the name in the site definition
+public virtual string ApplicationShortName { get; set; } // defaults to the name in the site definition
 
 
 
