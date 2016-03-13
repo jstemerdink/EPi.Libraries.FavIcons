@@ -16,6 +16,7 @@
     <tags>icons seo</tags>
     <dependencies>
       <dependency id="EPi.Libraries.Favicons" version="[1.0.0, 3.0.0)" />
+      <dependency id="ImageResizer" version="3.4.3" />
     </dependencies>
   </metadata>
 </package>
