@@ -22,7 +22,6 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
-using System.Reflection;
 using System.Web.Routing;
 
 using EPi.Libraries.Favicons.Models;
@@ -88,9 +87,8 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// <returns>TO.</returns>
         TO GetPropertyValue<T, TO>(ContentReference contentReference) where T : Attribute where TO : class;
 
-
         /// <summary>
-        /// Determines whether the specified content data has settings.
+        ///     Determines whether the specified content data has settings.
         /// </summary>
         /// <param name="contentData">The content data.</param>
         /// <returns><c>true</c> if the specified content data has settings; otherwise, <c>false</c>.</returns>

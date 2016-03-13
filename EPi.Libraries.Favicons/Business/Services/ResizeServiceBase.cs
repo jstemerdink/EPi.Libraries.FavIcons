@@ -38,7 +38,7 @@ using EPiServer.Web;
 namespace EPi.Libraries.Favicons.Business.Services
 {
     /// <summary>
-    /// Abstract Class ResizeService.
+    ///     Abstract Class ResizeService.
     /// </summary>
     /// <seealso cref="EPi.Libraries.Favicons.Business.Services.IResizeService" />
     public abstract class ResizeServiceBase : IResizeService
@@ -201,15 +201,19 @@ namespace EPi.Libraries.Favicons.Business.Services
         }
 
         /// <summary>
-        /// Creates the favicon.
+        ///     Creates the favicon.
         /// </summary>
         /// <param name="rootFolder">The root folder.</param>
         /// <param name="originalFile">The original file.</param>
         /// <param name="filePrefix">The file prefix.</param>
         /// <param name="width">The width.</param>
         /// <param name="height">The height.</param>
-        public abstract void CreateFavicon(ContentReference rootFolder, Stream originalFile, string filePrefix, int width, int height);
-        
+        public abstract void CreateFavicon(
+            ContentReference rootFolder,
+            Stream originalFile,
+            string filePrefix,
+            int width,
+            int height);
 
         /// <summary>
         ///     Gets the or create favicons folder.
@@ -225,7 +229,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         }
 
         /// <summary>
-        /// Gets the assets root folder.
+        ///     Gets the assets root folder.
         /// </summary>
         /// <returns>ContentReference.</returns>
         protected static ContentReference GetAssetsRootFolder()

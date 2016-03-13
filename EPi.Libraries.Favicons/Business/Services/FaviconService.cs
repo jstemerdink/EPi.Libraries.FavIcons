@@ -35,7 +35,6 @@ using EPi.Libraries.Favicons.Models;
 using EPiServer;
 using EPiServer.Core;
 using EPiServer.DataAbstraction;
-using EPiServer.Framework.Blobs;
 using EPiServer.Framework.Cache;
 using EPiServer.Logging;
 using EPiServer.ServiceLocation;
@@ -139,6 +138,14 @@ namespace EPi.Libraries.Favicons.Business.Services
             catch (ArgumentNullException argumentNullException)
             {
                 Logger.Error("[Favicons] Error creating browserconfig xml", argumentNullException);
+            }
+            catch (FormatException formatException)
+            {
+                Logger.Error("[Favicons] Error creating browserconfig xml", formatException);
+            }
+            catch (InvalidOperationException invalidOperationException)
+            {
+                Logger.Error("[Favicons] Error creating browserconfig xml", invalidOperationException);
             }
 
             return string.Empty;

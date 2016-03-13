@@ -102,6 +102,14 @@ namespace EPi.Libraries.Favicons.ImageResizer
             {
                 Logger.Error("[Favicons] Error creating icon.", accessDeniedException);
             }
+            catch (ArgumentNullException argumentNullException)
+            {
+                Logger.Error("[Favicons] Error creating icon.", argumentNullException);
+            }
+            catch (FormatException formatException)
+            {
+                Logger.Error("[Favicons] Error creating icon.", formatException);
+            }
         }
     }
 }
