@@ -29,6 +29,11 @@ namespace EPi.Libraries.Favicons.Models
     public class FaviconSettings
     {
         /// <summary>
+        /// The favicon cache key
+        /// </summary>
+        public const string FaviconCacheKey = "FaviconSettings";
+
+        /// <summary>
         ///     Gets or sets the color of the theme.
         /// </summary>
         /// <value>The color of the theme.</value>

@@ -23,10 +23,12 @@
 
 using EPi.Libraries.Favicons.Attributes;
 using EPi.Libraries.Favicons.Business.Services;
+using EPi.Libraries.Favicons.Models;
 
 using EPiServer;
 using EPiServer.Core;
 using EPiServer.Framework;
+using EPiServer.Framework.Cache;
 using EPiServer.Framework.Initialization;
 using EPiServer.Logging;
 using EPiServer.ServiceLocation;
@@ -57,6 +59,12 @@ namespace EPi.Libraries.Favicons.Business.Initialization
         /// </summary>
         /// <value>The content events.</value>
         private Injected<IContentEvents> ContentEvents { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the synchronized object instance cache.
+        /// </summary>
+        /// <value>The synchronized object instance cache.</value>
+        private Injected<ISynchronizedObjectInstanceCache> SynchronizedObjectInstanceCache { get; set; }
 
         /// <summary>
         ///     Gets or sets the favicon service.
@@ -183,6 +191,8 @@ namespace EPi.Libraries.Favicons.Business.Initialization
                 this.FaviconService.Service.GetPropertyValue<MobileAppIconAttribute, ContentReference>(contentData);
 
             this.ResizeService.Service.CreateMobileAppIcons(mobileAppIconReference);
+
+            this.FaviconService.Service.SetFaviconSettings(contentData);
         }
     }
 }

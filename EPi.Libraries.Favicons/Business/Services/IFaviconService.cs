@@ -70,6 +70,13 @@ namespace EPi.Libraries.Favicons.Business.Services
         FaviconSettings GetFaviconSettings();
 
         /// <summary>
+        /// Sets the favicon settings.
+        /// </summary>
+        /// <param name="contentData">The content data.</param>
+        /// <returns>FaviconSettings.</returns>
+        FaviconSettings SetFaviconSettings(ContentData contentData);
+
+        /// <summary>
         ///     Gets the property value.
         /// </summary>
         /// <typeparam name="T">The type of the attribute to check for.</typeparam>

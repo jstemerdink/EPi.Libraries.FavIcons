@@ -268,17 +268,15 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// </exception>
         public FaviconSettings GetFaviconSettings()
         {
-            const string FaviconCacheKey = "FaviconSettings";
-
-            FaviconSettings faviconSettings =
-                this.SynchronizedObjectInstanceCache.Service.Get(FaviconCacheKey) as FaviconSettings;
+           FaviconSettings faviconSettings =
+                this.SynchronizedObjectInstanceCache.Service.Get(FaviconSettings.FaviconCacheKey) as FaviconSettings;
 
             if (faviconSettings != null)
             {
                 return faviconSettings;
             }
 
-            ContentData contentData;
+            IContent content;
 
             ContentType type =
                 this.ContentTypeRepository.Service.List()
@@ -298,45 +296,67 @@ namespace EPi.Libraries.Favicons.Business.Services
                     "[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .");
             }
 
-            this.ContentRepository.Service.TryGet(settingsUsage.ContentLink, out contentData);
+            this.ContentRepository.Service.TryGet(settingsUsage.ContentLink.ToReferenceWithoutVersion(), out content);
+
+
+            faviconSettings = this.SetFaviconSettings(content as ContentData);
+
+            return faviconSettings;
+        }
+
+        /// <summary>
+        ///     Gets the favicon settings.
+        /// </summary>
+        /// <returns>FaviconSettings.</returns>
+        /// <exception cref="InvalidOperationException">[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .</exception>
+        public FaviconSettings SetFaviconSettings(ContentData contentData)
+        {
+            if (contentData == null)
+            {
+                throw new InvalidOperationException(
+                    "[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .");
+            }
+
+            this.SynchronizedObjectInstanceCache.Service.Remove(FaviconSettings.FaviconCacheKey);
 
             string applicationName = this.GetPropertyValue<ApplicationNameAttribute, string>(contentData);
             string applicationShortName = this.GetPropertyValue<ApplicationShortNameAttribute, string>(contentData);
             string themeColor = this.GetPropertyValue<ThemeColorAttribute, string>(contentData);
             string tileColor = this.GetPropertyValue<TileColorAttribute, string>(contentData);
             string faviconsPath = this.GetVirtualIconPath();
+
             ContentReference faviconReference =
                 this.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
             ContentReference mobileAppIconReference =
                 this.GetPropertyValue<MobileAppIconAttribute, ContentReference>(contentData);
 
-            faviconSettings = new FaviconSettings
-                                  {
-                                      ThemeColor =
-                                          !string.IsNullOrWhiteSpace(themeColor)
-                                              ? themeColor
-                                              : "#1E1E1E",
-                                      TileColor =
-                                          !string.IsNullOrWhiteSpace(tileColor) ? tileColor : "#1E1E1E",
-                                      DisplayFavicons =
-                                          !ContentReference.IsNullOrEmpty(faviconReference),
-                                      FaviconsPath = faviconsPath,
-                                      ApplicationName =
-                                          string.IsNullOrWhiteSpace(applicationName)
-                                              ? SiteDefinition.Current.Name
-                                              : applicationName,
-                                      ApplicationShortName =
-                                          string.IsNullOrWhiteSpace(applicationShortName)
-                                              ? SiteDefinition.Current.Name
-                                              : applicationShortName,
-                                      MobileWebAppCapable =
-                                          !ContentReference.IsNullOrEmpty(mobileAppIconReference)
-                                  };
+            FaviconSettings faviconSettings = new FaviconSettings
+                                                  {
+                                                      ThemeColor =
+                                                          !string.IsNullOrWhiteSpace(themeColor)
+                                                              ? themeColor
+                                                              : "#1E1E1E",
+                                                      TileColor =
+                                                          !string.IsNullOrWhiteSpace(tileColor) ? tileColor : "#1E1E1E",
+                                                      DisplayFavicons =
+                                                          !ContentReference.IsNullOrEmpty(faviconReference),
+                                                      FaviconsPath = faviconsPath,
+                                                      ApplicationName =
+                                                          string.IsNullOrWhiteSpace(applicationName)
+                                                              ? SiteDefinition.Current.Name
+                                                              : applicationName,
+                                                      ApplicationShortName =
+                                                          string.IsNullOrWhiteSpace(applicationShortName)
+                                                              ? SiteDefinition.Current.Name
+                                                              : applicationShortName,
+                                                      MobileWebAppCapable =
+                                                          !ContentReference.IsNullOrEmpty(mobileAppIconReference)
+                                                  };
 
             CacheEvictionPolicy cacheEvictionPolicy =
                 new CacheEvictionPolicy(new[] { DataFactoryCache.PageCommonCacheKey(SiteDefinition.Current.StartPage) });
 
-            this.SynchronizedObjectInstanceCache.Service.Insert(FaviconCacheKey, faviconSettings, cacheEvictionPolicy);
+            this.SynchronizedObjectInstanceCache.Service.Insert(FaviconSettings.FaviconCacheKey, faviconSettings, cacheEvictionPolicy);
 
             return faviconSettings;
         }
