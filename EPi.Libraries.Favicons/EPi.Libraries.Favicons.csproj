@@ -183,7 +183,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="README.md" />
+    <None Include="README.md" />
     <Content Include="packages.config" />
     <None Include="readme.txt" />
     <Content Include="Views\Shared\Favicons.cshtml" />
