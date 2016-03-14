@@ -29,11 +29,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly: AssemblyTitle("EPi.Libraries.Favicons")]
-[assembly: AssemblyDescription("Create Favicons from within EPiServer")]
+[assembly: AssemblyTitle("EPi.Libraries.Favicons.ImageResizer")]
+[assembly: AssemblyDescription("Image resizing service for use within EPi.Libraries.Favicons")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Jeroen Stemerdink")]
-[assembly: AssemblyProduct("EPi.Libraries.Favicons")]
+[assembly: AssemblyProduct("EPi.Libraries.Favicons.ImageResizer")]
 [assembly: AssemblyCopyright("Copyright © Jeroen Stemerdink 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -47,4 +47,18 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 
-[assembly: Guid("d485692a-bb45-458e-8275-daa6afbd9eb1")]
+[assembly: Guid("e10b62e4-cb90-4520-8b38-4b9426538bf7")]
+
+// Version information for an assembly consists of the following four values:
+//
+//      Major Version
+//      Minor Version 
+//      Build Number
+//      Revision
+//
+// You can specify all the values or you can default the Build and Revision Numbers 
+// by using the '*' as shown below:
+// [assembly: AssemblyVersion("1.0.*")]
+
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]

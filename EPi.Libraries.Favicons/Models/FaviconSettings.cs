@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Jeroen Stemerdink. 
+﻿// Copyright © 2016 Jeroen Stemerdink. 
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -28,6 +28,11 @@ namespace EPi.Libraries.Favicons.Models
     /// </summary>
     public class FaviconSettings
     {
+        /// <summary>
+        /// The favicon cache key
+        /// </summary>
+        public const string FaviconCacheKey = "FaviconSettings";
+
         /// <summary>
         ///     Gets or sets the color of the theme.
         /// </summary>

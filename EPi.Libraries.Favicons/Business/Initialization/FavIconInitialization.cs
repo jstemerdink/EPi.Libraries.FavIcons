@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Jeroen Stemerdink. 
+﻿// Copyright © 2016 Jeroen Stemerdink. 
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -21,15 +21,14 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-using System.Reflection;
-
 using EPi.Libraries.Favicons.Attributes;
 using EPi.Libraries.Favicons.Business.Services;
+using EPi.Libraries.Favicons.Models;
 
 using EPiServer;
 using EPiServer.Core;
-using EPiServer.DataAbstraction;
 using EPiServer.Framework;
+using EPiServer.Framework.Cache;
 using EPiServer.Framework.Initialization;
 using EPiServer.Logging;
 using EPiServer.ServiceLocation;
@@ -39,7 +38,7 @@ using InitializationModule = EPiServer.Web.InitializationModule;
 namespace EPi.Libraries.Favicons.Business.Initialization
 {
     /// <summary>
-    ///     Class Faviconinitialization.
+    ///     Class Favicon initialization.
     /// </summary>
     [InitializableModule]
     [ModuleDependency(typeof(InitializationModule))]
@@ -48,7 +47,7 @@ namespace EPi.Libraries.Favicons.Business.Initialization
         /// <summary>
         ///     The logger
         /// </summary>
-        private static readonly ILogger Logger = LogManager.GetLogger(typeof(FaviconInitialization));
+        private static readonly ILogger Logger = LogManager.GetLogger();
 
         /// <summary>
         ///     Check if the initialization has been done.
@@ -62,10 +61,22 @@ namespace EPi.Libraries.Favicons.Business.Initialization
         private Injected<IContentEvents> ContentEvents { get; set; }
 
         /// <summary>
+        ///     Gets or sets the synchronized object instance cache.
+        /// </summary>
+        /// <value>The synchronized object instance cache.</value>
+        private Injected<ISynchronizedObjectInstanceCache> SynchronizedObjectInstanceCache { get; set; }
+
+        /// <summary>
         ///     Gets or sets the favicon service.
         /// </summary>
         /// <value>The favicon service.</value>
         private Injected<IFaviconService> FaviconService { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the resizing service.
+        /// </summary>
+        /// <value>The resizing service.</value>
+        private Injected<IResizeService> ResizeService { get; set; }
 
         /// <summary>
         ///     Initializes this instance.
@@ -164,14 +175,14 @@ namespace EPi.Libraries.Favicons.Business.Initialization
 
             if (ContentReference.IsNullOrEmpty(faviconReference))
             {
-                this.FaviconService.Service.DeleteFavicons();
+                this.ResizeService.Service.DeleteFavicons();
                 return;
             }
 
             // Remove the icons. More efficient than getting them one by one and updating them.
-            this.FaviconService.Service.CleanUpFavicons();
+            this.ResizeService.Service.CleanUpFavicons();
 
-            if (!this.FaviconService.Service.CreateFavicons(faviconReference))
+            if (!this.ResizeService.Service.CreateFavicons(faviconReference))
             {
                 return;
             }
@@ -179,7 +190,9 @@ namespace EPi.Libraries.Favicons.Business.Initialization
             ContentReference mobileAppIconReference =
                 this.FaviconService.Service.GetPropertyValue<MobileAppIconAttribute, ContentReference>(contentData);
 
-            this.FaviconService.Service.CreateMobileAppicons(mobileAppIconReference);
+            this.ResizeService.Service.CreateMobileAppIcons(mobileAppIconReference);
+
+            this.FaviconService.Service.SetFaviconSettings(contentData);
         }
     }
 }

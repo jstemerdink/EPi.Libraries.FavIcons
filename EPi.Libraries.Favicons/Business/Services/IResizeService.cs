@@ -21,30 +21,36 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-using System;
+using EPiServer.Core;
 
-namespace EPi.Libraries.Favicons.Attributes
+namespace EPi.Libraries.Favicons.Business.Services
 {
     /// <summary>
-    ///     Class ThemeColorAttribute. This class cannot be inherited.
+    ///     Interface IResizeService
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property)]
-    public sealed class ThemeColorAttribute : Attribute
+    public interface IResizeService
     {
-        #region Public Properties
+        /// <summary>
+        ///     Creates the favicons.
+        /// </summary>
+        /// <param name="iconReference">The icon reference.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        bool CreateFavicons(ContentReference iconReference);
 
         /// <summary>
-        ///     Gets a value indicating whether the property is used for the theme color.
+        ///     Creates the mobile app icons.
         /// </summary>
-        /// <value><c>true</c> if [used for the theme color]; otherwise, <c>false</c>.</value>
-        public static bool ThemeColor
-        {
-            get
-            {
-                return true;
-            }
-        }
+        /// <param name="iconReference">The icon reference.</param>
+        void CreateMobileAppIcons(ContentReference iconReference);
 
-        #endregion
+        /// <summary>
+        ///     Cleans up favicons.
+        /// </summary>
+        void CleanUpFavicons();
+
+        /// <summary>
+        ///     Deletes the favicons.
+        /// </summary>
+        void DeleteFavicons();
     }
 }
