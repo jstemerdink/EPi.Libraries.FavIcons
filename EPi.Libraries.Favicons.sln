@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPi.Libraries.Favicons", "EPi.Libraries.FavIcons\EPi.Libraries.Favicons.csproj", "{C47CAD02-87DC-4308-907E-51BE16B92D57}"
 EndProject
@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{532C28
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPi.Libraries.Favicons.ImageResizer", "EPi.Libraries.FavIcons.ImageResizer\EPi.Libraries.Favicons.ImageResizer.csproj", "{E10B62E4-CB90-4520-8B38-4B9426538BF7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPi.Libraries.Favicons.ImageProcessor", "EPi.Libraries.Favicons.ImageProcessor\EPi.Libraries.Favicons.ImageProcessor.csproj", "{902A9791-2B04-4C90-8702-AB677188E1C4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,6 +36,10 @@ Global
 		{E10B62E4-CB90-4520-8B38-4B9426538BF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E10B62E4-CB90-4520-8B38-4B9426538BF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E10B62E4-CB90-4520-8B38-4B9426538BF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{902A9791-2B04-4C90-8702-AB677188E1C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{902A9791-2B04-4C90-8702-AB677188E1C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{902A9791-2B04-4C90-8702-AB677188E1C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{902A9791-2B04-4C90-8702-AB677188E1C4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

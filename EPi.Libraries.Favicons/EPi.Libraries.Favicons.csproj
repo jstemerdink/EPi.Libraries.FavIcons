@@ -218,7 +218,7 @@
     <None Include="web.config.uninstall.xdt" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="EPi.Libraries.Favicons.csproj.nuspec" />
+    <Content Include="EPi.Libraries.Favicons.nuspec" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
