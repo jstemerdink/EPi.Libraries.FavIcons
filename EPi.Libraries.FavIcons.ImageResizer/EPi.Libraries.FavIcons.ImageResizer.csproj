@@ -175,7 +175,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="EPi.Libraries.FavIcons.ImageResizer.csproj.nuspec" />
+    <Content Include="EPi.Libraries.FavIcons.ImageResizer.nuspec" />
     <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="README.md" />
