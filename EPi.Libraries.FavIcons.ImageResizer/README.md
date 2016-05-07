@@ -11,5 +11,10 @@ By Jeroen Stemerdink
 
 ## Description
 
-Resizing service for use in EPi.Libraries.Favicons that uses [ImageResizer](http://imageresizing.net)] to resize your images.
+Resizing service for use in EPi.Libraries.Favicons that uses [ImageResizer](http://imageresizing.net) to resize your images.
+
+
+> *Powered by ReSharper*
+
+> [![image](http://resources.jetbrains.com/assets/media/open-graph/jetbrains_250x250.png)](http://jetbrains.com)
 

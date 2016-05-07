@@ -15,7 +15,7 @@
     <copyright>Copyright © Jeroen Stemerdink 2016</copyright>
     <tags>icons seo</tags>
     <dependencies>
-      <dependency id="EPi.Libraries.Favicons" version="[1.0.0, 3.0.0)" />
+      <dependency id="EPi.Libraries.Favicons" version="[2.0.0, 3.0.0)" />
       <dependency id="ImageResizer" version="3.4.3" />
     </dependencies>
   </metadata>
