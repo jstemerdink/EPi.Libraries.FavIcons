@@ -22,29 +22,29 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Reflection;
+using System.Runtime.InteropServices;
 
-namespace EPi.Libraries.Favicons.Attributes
-{
-    /// <summary>
-    ///     Class ThemeColorAttribute. This class cannot be inherited.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Property)]
-    public sealed class ThemeColorAttribute : Attribute
-    {
-        #region Public Properties
+// General Information about an assembly is controlled through the following 
+// set of attributes. Change these attribute values to modify the information
+// associated with an assembly.
 
-        /// <summary>
-        ///     Gets a value indicating whether the property is used for the theme color.
-        /// </summary>
-        /// <value><c>true</c> if [used for the theme color]; otherwise, <c>false</c>.</value>
-        public static bool ThemeColor
-        {
-            get
-            {
-                return true;
-            }
-        }
+[assembly: AssemblyTitle("EPi.Libraries.Favicons.ImageResizer")]
+[assembly: AssemblyDescription("Image resizing service for use within EPi.Libraries.Favicons")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("Jeroen Stemerdink")]
+[assembly: AssemblyProduct("EPi.Libraries.Favicons.ImageResizer")]
+[assembly: AssemblyCopyright("Copyright © Jeroen Stemerdink 2016")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
 
-        #endregion
-    }
-}
+// Setting ComVisible to false makes the types in this assembly not visible 
+// to COM components.  If you need to access a type in this assembly from 
+// COM, set the ComVisible attribute to true on that type.
+
+[assembly: ComVisible(false)]
+[assembly: CLSCompliant(true)]
+
+// The following GUID is for the ID of the typelib if this project is exposed to COM
+
+[assembly: Guid("e10b62e4-cb90-4520-8b38-4b9426538bf7")]

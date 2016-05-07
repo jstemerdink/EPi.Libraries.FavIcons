@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Jeroen Stemerdink. 
+﻿// Copyright © 2016 Jeroen Stemerdink. 
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -22,9 +22,7 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Web.Mvc;
@@ -37,16 +35,10 @@ using EPi.Libraries.Favicons.Models;
 using EPiServer;
 using EPiServer.Core;
 using EPiServer.DataAbstraction;
-using EPiServer.DataAccess;
-using EPiServer.Framework.Blobs;
 using EPiServer.Framework.Cache;
 using EPiServer.Logging;
-using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using EPiServer.Web;
-using EPiServer.Web.Routing;
-
-using ImageResizer;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -62,7 +54,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// <summary>
         ///     The logger
         /// </summary>
-        private static readonly ILogger Logger = LogManager.GetLogger(typeof(FaviconService));
+        private static readonly ILogger Logger = LogManager.GetLogger();
 
         /// <summary>
         ///     Gets or sets the content repository.
@@ -77,22 +69,10 @@ namespace EPi.Libraries.Favicons.Business.Services
         private Injected<IContentTypeRepository> ContentTypeRepository { get; set; }
 
         /// <summary>
-        /// Gets or sets the content model usage.
+        ///     Gets or sets the content model usage.
         /// </summary>
         /// <value>The content model usage.</value>
         private Injected<IContentModelUsage> ContentModelUsage { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the content media resolver.
-        /// </summary>
-        /// <value>The content media resolver.</value>
-        private Injected<ContentMediaResolver> ContentMediaResolver { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the BLOB factory.
-        /// </summary>
-        /// <value>The BLOB factory.</value>
-        private Injected<BlobFactory> BlobFactory { get; set; }
 
         /// <summary>
         ///     Gets or sets the synchronized object instance cache.
@@ -158,6 +138,14 @@ namespace EPi.Libraries.Favicons.Business.Services
             catch (ArgumentNullException argumentNullException)
             {
                 Logger.Error("[Favicons] Error creating browserconfig xml", argumentNullException);
+            }
+            catch (FormatException formatException)
+            {
+                Logger.Error("[Favicons] Error creating browserconfig xml", formatException);
+            }
+            catch (InvalidOperationException invalidOperationException)
+            {
+                Logger.Error("[Favicons] Error creating browserconfig xml", invalidOperationException);
             }
 
             return string.Empty;
@@ -274,75 +262,101 @@ namespace EPi.Libraries.Favicons.Business.Services
         ///     Gets the favicon settings.
         /// </summary>
         /// <returns>FaviconSettings.</returns>
-        /// <exception cref="InvalidOperationException">[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .</exception>
+        /// <exception cref="InvalidOperationException">
+        ///     [Favicons] No settings defined. Use ContainsSettings attribute on your
+        ///     ContentType .
+        /// </exception>
         public FaviconSettings GetFaviconSettings()
         {
-            const string FaviconCacheKey = "FaviconSettings";
-
-            FaviconSettings faviconSettings =
-                this.SynchronizedObjectInstanceCache.Service.Get(FaviconCacheKey) as FaviconSettings;
+           FaviconSettings faviconSettings =
+                this.SynchronizedObjectInstanceCache.Service.Get(FaviconSettings.FaviconCacheKey) as FaviconSettings;
 
             if (faviconSettings != null)
             {
                 return faviconSettings;
             }
 
-            ContentData contentData;
-            
+            IContent content;
 
-            ContentType type = this.ContentTypeRepository.Service.List().FirstOrDefault(c => HasAttribute<ContainsSettingsAttribute>(c.ModelType));
-            
+            ContentType type =
+                this.ContentTypeRepository.Service.List()
+                    .FirstOrDefault(c => HasAttribute<ContainsSettingsAttribute>(c.ModelType));
+
             if (type == null)
             {
-                throw new InvalidOperationException("[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .");
+                throw new InvalidOperationException(
+                    "[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .");
             }
 
             ContentUsage settingsUsage = this.ContentModelUsage.Service.ListContentOfContentType(type).FirstOrDefault();
 
             if (settingsUsage == null)
             {
-                throw new InvalidOperationException("[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .");
+                throw new InvalidOperationException(
+                    "[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .");
             }
 
-            this.ContentRepository.Service.TryGet(settingsUsage.ContentLink, out contentData);
+            this.ContentRepository.Service.TryGet(settingsUsage.ContentLink.ToReferenceWithoutVersion(), out content);
+
+
+            faviconSettings = this.SetFaviconSettings(content as ContentData);
+
+            return faviconSettings;
+        }
+
+        /// <summary>
+        ///     Gets the favicon settings.
+        /// </summary>
+        /// <returns>FaviconSettings.</returns>
+        /// <exception cref="InvalidOperationException">[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .</exception>
+        public FaviconSettings SetFaviconSettings(ContentData contentData)
+        {
+            if (contentData == null)
+            {
+                throw new InvalidOperationException(
+                    "[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .");
+            }
+
+            this.SynchronizedObjectInstanceCache.Service.Remove(FaviconSettings.FaviconCacheKey);
 
             string applicationName = this.GetPropertyValue<ApplicationNameAttribute, string>(contentData);
             string applicationShortName = this.GetPropertyValue<ApplicationShortNameAttribute, string>(contentData);
             string themeColor = this.GetPropertyValue<ThemeColorAttribute, string>(contentData);
             string tileColor = this.GetPropertyValue<TileColorAttribute, string>(contentData);
             string faviconsPath = this.GetVirtualIconPath();
+
             ContentReference faviconReference =
                 this.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData);
             ContentReference mobileAppIconReference =
                 this.GetPropertyValue<MobileAppIconAttribute, ContentReference>(contentData);
 
-            faviconSettings = new FaviconSettings
-                                  {
-                                      ThemeColor =
-                                          !string.IsNullOrWhiteSpace(themeColor)
-                                              ? themeColor
-                                              : "#1E1E1E",
-                                      TileColor =
-                                          !string.IsNullOrWhiteSpace(tileColor) ? tileColor : "#1E1E1E",
-                                      DisplayFavicons =
-                                          !ContentReference.IsNullOrEmpty(faviconReference),
-                                      FaviconsPath = faviconsPath,
-                                      ApplicationName =
-                                          string.IsNullOrWhiteSpace(applicationName)
-                                              ? SiteDefinition.Current.Name
-                                              : applicationName,
-                                      ApplicationShortName =
-                                          string.IsNullOrWhiteSpace(applicationShortName)
-                                              ? SiteDefinition.Current.Name
-                                              : applicationShortName,
-                                      MobileWebAppCapable =
-                                          !ContentReference.IsNullOrEmpty(mobileAppIconReference)
-                                  };
+            FaviconSettings faviconSettings = new FaviconSettings
+                                                  {
+                                                      ThemeColor =
+                                                          !string.IsNullOrWhiteSpace(themeColor)
+                                                              ? themeColor
+                                                              : "#1E1E1E",
+                                                      TileColor =
+                                                          !string.IsNullOrWhiteSpace(tileColor) ? tileColor : "#1E1E1E",
+                                                      DisplayFavicons =
+                                                          !ContentReference.IsNullOrEmpty(faviconReference),
+                                                      FaviconsPath = faviconsPath,
+                                                      ApplicationName =
+                                                          string.IsNullOrWhiteSpace(applicationName)
+                                                              ? SiteDefinition.Current.Name
+                                                              : applicationName,
+                                                      ApplicationShortName =
+                                                          string.IsNullOrWhiteSpace(applicationShortName)
+                                                              ? SiteDefinition.Current.Name
+                                                              : applicationShortName,
+                                                      MobileWebAppCapable =
+                                                          !ContentReference.IsNullOrEmpty(mobileAppIconReference)
+                                                  };
 
             CacheEvictionPolicy cacheEvictionPolicy =
                 new CacheEvictionPolicy(new[] { DataFactoryCache.PageCommonCacheKey(SiteDefinition.Current.StartPage) });
 
-            this.SynchronizedObjectInstanceCache.Service.Insert(FaviconCacheKey, faviconSettings, cacheEvictionPolicy);
+            this.SynchronizedObjectInstanceCache.Service.Insert(FaviconSettings.FaviconCacheKey, faviconSettings, cacheEvictionPolicy);
 
             return faviconSettings;
         }
@@ -388,211 +402,13 @@ namespace EPi.Libraries.Favicons.Business.Services
         }
 
         /// <summary>
-        /// Determines whether the specified content data has settings.
+        ///     Determines whether the specified content data has settings.
         /// </summary>
         /// <param name="contentData">The content data.</param>
         /// <returns><c>true</c> if the specified content data has settings; otherwise, <c>false</c>.</returns>
         public bool HasSettings(ContentData contentData)
         {
             return contentData != null && HasAttribute<ContainsSettingsAttribute>(contentData.GetType());
-        }
-
-        /// <summary>
-        ///     Creates the favicons.
-        /// </summary>
-        /// <param name="iconReference">The icon reference.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        public bool CreateFavicons(ContentReference iconReference)
-        {
-            if (ContentReference.IsNullOrEmpty(iconReference))
-            {
-                return false;
-            }
-
-            ContentReference rootfolder = this.GetOrCreateFaviconsFolder();
-
-            if (ContentReference.IsNullOrEmpty(rootfolder))
-            {
-                return false;
-            }
-
-            ImageData faviconImageData;
-
-            if (!this.ContentRepository.Service.TryGet(iconReference, out faviconImageData))
-            {
-                return false;
-            }
-
-            using (Stream s = faviconImageData.BinaryData.OpenRead())
-            {
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 57, 57);
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 60, 60);
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 72, 72);
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 76, 76);
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 114, 114);
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 120, 120);
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 144, 144);
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 152, 152);
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 180, 180);
-
-                this.CreateFavicon(rootfolder, s, "mstile", 70, 70);
-                this.CreateFavicon(rootfolder, s, "mstile", 150, 150);
-                this.CreateFavicon(rootfolder, s, "mstile", 310, 310);
-                this.CreateFavicon(rootfolder, s, "mstile", 310, 150);
-
-                this.CreateFavicon(rootfolder, s, "android-chrome", 36, 36);
-                this.CreateFavicon(rootfolder, s, "android-chrome", 48, 48);
-                this.CreateFavicon(rootfolder, s, "android-chrome", 72, 72);
-                this.CreateFavicon(rootfolder, s, "android-chrome", 96, 96);
-                this.CreateFavicon(rootfolder, s, "android-chrome", 144, 144);
-                this.CreateFavicon(rootfolder, s, "android-chrome", 192, 192);
-
-                this.CreateFavicon(rootfolder, s, "favicon", 16, 16);
-                this.CreateFavicon(rootfolder, s, "favicon", 32, 32);
-                this.CreateFavicon(rootfolder, s, "favicon", 96, 96);
-                this.CreateFavicon(rootfolder, s, "favicon", 192, 192);
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        ///     Creates the favicons.
-        /// </summary>
-        /// <param name="iconReference">The icon reference.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        public void CreateMobileAppicons(ContentReference iconReference)
-        {
-            if (ContentReference.IsNullOrEmpty(iconReference))
-            {
-                return;
-            }
-
-            ContentReference rootfolder = this.GetOrCreateFaviconsFolder();
-
-            if (ContentReference.IsNullOrEmpty(rootfolder))
-            {
-                return;
-            }
-
-            ImageData faviconImageData;
-
-            if (!this.ContentRepository.Service.TryGet(iconReference, out faviconImageData))
-            {
-                return;
-            }
-
-            using (Stream s = faviconImageData.BinaryData.OpenRead())
-            {
-                this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 1536, 2008);
-                this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 1496, 2048);
-                this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 768, 1004);
-                this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 748, 1024);
-                this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 640, 1096);
-                this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 640, 1096);
-                this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 640, 920);
-                this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 320, 460);
-            }
-        }
-
-        /// <summary>
-        ///     Cleans up favicons.
-        /// </summary>
-        public void CleanUpFavicons()
-        {
-            ContentReference faviconsFolder = this.GetOrCreateFaviconsFolder();
-
-            if (ContentReference.IsNullOrEmpty(faviconsFolder))
-            {
-                return;
-            }
-
-            this.ContentRepository.Service.DeleteChildren(faviconsFolder, true, AccessLevel.NoAccess);
-        }
-
-        /// <summary>
-        ///     Cleans up favicons.
-        /// </summary>
-        public void DeleteFavicons()
-        {
-            ContentReference faviconsFolder = this.GetOrCreateFaviconsFolder();
-
-            if (ContentReference.IsNullOrEmpty(faviconsFolder))
-            {
-                return;
-            }
-
-            this.ContentRepository.Service.Delete(faviconsFolder, true);
-        }
-
-        /// <summary>
-        ///     Gets the or create favicons folder.
-        /// </summary>
-        /// <returns>ContentReference.</returns>
-        private ContentReference GetOrCreateFaviconsFolder()
-        {
-            ContentReference rootFolder = GetAssetsRootFolder();
-
-            ContentFolder faviconsFolder = this.GetOrCreateFolder(rootFolder, "Favicons");
-
-            return faviconsFolder == null ? ContentReference.EmptyReference : faviconsFolder.ContentLink;
-        }
-
-        private static ContentReference GetAssetsRootFolder()
-        {
-            ContentReference rootFolder = SiteDefinition.Current.SiteAssetsRoot;
-
-            if (ContentReference.IsNullOrEmpty(rootFolder))
-            {
-                rootFolder = SiteDefinition.Current.GlobalAssetsRoot;
-            }
-
-            return rootFolder;
-        }
-
-        /// <summary>
-        ///     Returns a <c>ContentFolder</c> folder
-        /// </summary>
-        /// <param name="parentFolder">The folder container.</param>
-        /// <param name="folderName">Identifier for folder.</param>
-        /// <returns>Stored <c>ContentFolder</c> folder; otherwise created folder.</returns>
-        private ContentFolder GetOrCreateFolder(ContentReference parentFolder, string folderName)
-        {
-            ContentFolder storedFolder =
-                this.ContentRepository.Service.GetChildren<ContentFolder>(parentFolder)
-                    .FirstOrDefault(f => string.Compare(f.Name, folderName, StringComparison.OrdinalIgnoreCase) == 0);
-
-            if (storedFolder != null)
-            {
-                return storedFolder;
-            }
-
-            ContentFolder parent;
-
-            if (!this.ContentRepository.Service.TryGet(parentFolder, out parent))
-            {
-                return null;
-            }
-
-            try
-            {
-                ContentFolder folder = this.ContentRepository.Service.GetDefault<ContentFolder>(parent.ContentLink);
-                folder.Name = folderName;
-
-                ContentReference folderReference = this.ContentRepository.Service.Save(
-                folder,
-                SaveAction.Publish,
-                AccessLevel.NoAccess);
-
-                ContentFolder newFolder;
-
-                return !this.ContentRepository.Service.TryGet(folderReference, out newFolder) ? null : newFolder;
-            }
-            catch (AccessDeniedException accessDeniedException)
-            {
-                Logger.Error("[Favicons] Error creating content folder.", accessDeniedException);
-                return null;
-            }
         }
 
         /// <summary>
@@ -641,7 +457,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         }
 
         /// <summary>
-        /// Determines whether the specified member information has attribute.
+        ///     Determines whether the specified member information has attribute.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="memberInfo">The member information.</param>
@@ -659,56 +475,6 @@ namespace EPi.Libraries.Favicons.Business.Services
             }
 
             return attr != null;
-        }
-
-        private void CreateFavicon(
-            ContentReference rootFolder,
-            Stream originalFile,
-            string filePrefix,
-            int width,
-            int height)
-        {
-            //Get a suitable MediaData type from extension
-            Type mediaType = this.ContentMediaResolver.Service.GetFirstMatching(".png");
-
-            ContentType contentType = this.ContentTypeRepository.Service.Load(mediaType);
-
-            try
-            {
-                //Get a new empty file data
-                ImageData media = this.ContentRepository.Service.GetDefault<ImageData>(rootFolder, contentType.ID);
-
-                media.Name = string.Format(CultureInfo.InvariantCulture, "{0}-{1}x{2}.png", filePrefix, width, height);
-
-                //Create a blob in the binary container
-                Blob blob = this.BlobFactory.Service.CreateBlob(media.BinaryDataContainer, ".png");
-
-                ImageJob imageJob = new ImageJob(
-                    originalFile,
-                    blob.OpenWrite(),
-                    new Instructions(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "width={0}&height={1}&crop=auto&format=png",
-                            width,
-                            height)))
-                {
-                    ResetSourceStream = true,
-                    DisposeDestinationStream = true,
-                    DisposeSourceObject = false
-                };
-
-                imageJob.Build();
-
-                //Assign to file and publish changes
-                media.BinaryData = blob;
-                this.ContentRepository.Service.Save(media, SaveAction.Publish);
-            }
-            catch (AccessDeniedException accessDeniedException)
-            {
-                Logger.Error("[Favicons] Error creating icon.", accessDeniedException);
-            }
-            
         }
     }
 }
