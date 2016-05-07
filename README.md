@@ -57,3 +57,8 @@ Enable MVC Attribute Routing, you will need to upgrade to MVC 5+
 
 ### Thanks
 to [Rehan Saeed](https://github.com/RehanSaeed/ASP.NET-MVC-Boilerplate) for some of the ideas.
+
+
+> *Powered by ReSharper*
+
+> [![image](http://resources.jetbrains.com/assets/media/open-graph/jetbrains_250x250.png)](http://jetbrains.com)
