@@ -1,5 +1,5 @@
-﻿// Copyright © 2016 Jeroen Stemerdink. 
-// 
+﻿// Copyright © 2016 Jeroen Stemerdink.
+//
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
 // files (the "Software"), to deal in the Software without
@@ -8,10 +8,10 @@
 // copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following
 // conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 // OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -79,6 +79,8 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// </summary>
         /// <value>The synchronized object instance cache.</value>
         private Injected<ISynchronizedObjectInstanceCache> SynchronizedObjectInstanceCache { get; set; }
+
+        private Injected<IContentCacheKeyCreator> ContentCacheKeyCreator { get; set; }
 
         /// <summary>
         ///     Gets the browserconfig XML for the current site. This allows you to customize the tile, when a user pins
@@ -353,8 +355,10 @@ namespace EPi.Libraries.Favicons.Business.Services
                                                           !ContentReference.IsNullOrEmpty(mobileAppIconReference)
                                                   };
 
+            string cacheKey = this.ContentCacheKeyCreator.Service.CreateCommonCacheKey(SiteDefinition.Current.StartPage);
+
             CacheEvictionPolicy cacheEvictionPolicy =
-                new CacheEvictionPolicy(new[] { DataFactoryCache.PageCommonCacheKey(SiteDefinition.Current.StartPage) });
+                new CacheEvictionPolicy(new[] { cacheKey });
 
             this.SynchronizedObjectInstanceCache.Service.Insert(FaviconSettings.FaviconCacheKey, faviconSettings, cacheEvictionPolicy);
 
