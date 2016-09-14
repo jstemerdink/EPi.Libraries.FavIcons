@@ -21,7 +21,7 @@ after_build:
 - cmd: appveyor PushArtifact "EPi.Libraries.Favicons.ImageResizer.%GitVersion_NuGetVersion%.nupkg"
 - cmd: nuget pack EPi.Libraries.Favicons.ImageProcessor\EPi.Libraries.Favicons.ImageProcessor.csproj -version "%GitVersion_NuGetVersion%" -prop "target=%CONFIGURATION%"
 - cmd: appveyor PushArtifact "EPi.Libraries.Favicons.ImageProcessor.%GitVersion_NuGetVersion%.nupkg"
-- 7z a EPi.Libraries.Favicons.%GitVersion_NuGetVersion%.zip %APPVEYOR_BUILD_FOLDER%\EPi.Libraries.Favicons\bin\Release\EPi.Libraries.Favicons.dll  EPi.Libraries.Favicons\Views\Shared\*.cshtml
+- 7z a EPi.Libraries.Favicons.%GitVersion_NuGetVersion%.zip EPi.Libraries.Favicons\bin\Release\EPi.Libraries.Favicons.dll  EPi.Libraries.Favicons\Views\Shared\*.cshtml
 - cmd: appveyor PushArtifact "EPi.Libraries.Favicons.%GitVersion_NuGetVersion%.zip"
 - 7z a EPi.Libraries.Favicons.ImageResizer.%GitVersion_NuGetVersion%.zip %APPVEYOR_BUILD_FOLDER%\EPi.Libraries.Favicons.ImageResizer\bin\Release\EPi.Libraries.Favicons.ImageResizer.dll
 - cmd: appveyor PushArtifact "EPi.Libraries.Favicons.ImageResizer.%GitVersion_NuGetVersion%.zip"
