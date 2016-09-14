@@ -7,7 +7,7 @@ environment:
 install:
 - choco install gitversion.portable -pre -y
 - cmd: nuget sources add -Name EPiServerFeed -Source http://nuget.episerver.com/feed/packages.svc/
-- cmd: nuget sources add -Name EPiServerFeed -Source https://www.myget.org/F/cmscore/api/v2
+- cmd: nuget sources add -Name EPiServerBetaFeed -Source https://www.myget.org/F/cmscore/api/v2
 before_build:
 - cmd: nuget restore
 - ps: gitversion /l console /output buildserver /updateAssemblyInfo
