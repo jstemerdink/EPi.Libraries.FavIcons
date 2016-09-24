@@ -11,12 +11,12 @@
     <iconUrl>http://jstemerdink.net/images/js-nuget.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Possible to use a different resizing solution if so desired. Breaking change: built with 4.5.2</releaseNotes>
+    <releaseNotes>Updated to work with EPiServer 10.</releaseNotes>
     <copyright>Copyright © Jeroen Stemerdink 2016</copyright>
     <tags>icons seo</tags>
     <dependencies>
-      <dependency id="EPiServer.CMS.Core" version="[9.1.0, 10.0)" />
-      <dependency id="Microsoft.AspNet.Mvc" version="[5.2.2, 6.0)" />
+      <dependency id="EPiServer.CMS.Core" version="10.0.0" />
+      <dependency id="Microsoft.AspNet.Mvc" version="5.2.2" />
     </dependencies>
   </metadata>
   <files>

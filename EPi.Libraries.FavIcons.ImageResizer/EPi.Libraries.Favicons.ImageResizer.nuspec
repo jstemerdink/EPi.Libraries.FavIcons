@@ -11,11 +11,11 @@
     <iconUrl>http://jstemerdink.net/images/js-nuget.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes></releaseNotes>
+    <releaseNotes>Updated to work with EPiServer 10.</releaseNotes>
     <copyright>Copyright © Jeroen Stemerdink 2016</copyright>
-    <tags>icons seo</tags>
+    <tags>icons seo imageresizer</tags>
     <dependencies>
-      <dependency id="EPi.Libraries.Favicons" version="[2.0.0, 3.0.0)" />
+      <dependency id="EPi.Libraries.Favicons" version="3.0.0" />
       <dependency id="ImageResizer" version="3.4.3" />
     </dependencies>
   </metadata>
