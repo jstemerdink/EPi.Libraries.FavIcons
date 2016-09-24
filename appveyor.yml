@@ -41,7 +41,7 @@ deploy:
   artifact: /.*\.nupkg/
   on:
     branch: develop             # release from develop branch only
-    appveyor_repo_tag: true     # deploy on tag push only
+    #appveyor_repo_tag: true     # deploy on tag push only
 - provider: GitHub
   auth_token:
     secure: TaDEavUfTj6EgwcO7y5njQVS5Z9bBU/fVFuSApo5XEO6FSBT5UzJQmyJjbhIFDZb
