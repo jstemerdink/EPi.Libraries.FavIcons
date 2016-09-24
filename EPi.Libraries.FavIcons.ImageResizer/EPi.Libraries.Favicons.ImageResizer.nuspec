@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <package xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
@@ -13,15 +13,10 @@
     <description>$description$</description>
     <releaseNotes>Updated to work with EPiServer 10.</releaseNotes>
     <copyright>Copyright © Jeroen Stemerdink 2016</copyright>
-    <tags>icons seo</tags>
+    <tags>icons seo imageresizer</tags>
     <dependencies>
-      <dependency id="EPiServer.CMS.Core" version="10.0.0" />
-      <dependency id="Microsoft.AspNet.Mvc" version="5.2.2" />
+      <dependency id="EPi.Libraries.Favicons" version="3.0.0" />
+      <dependency id="ImageResizer" version="3.4.3" />
     </dependencies>
   </metadata>
-  <files>
-    <file src="web.config.install.xdt" target="content" />
-    <file src="web.config.uninstall.xdt" target="content" />
-    <file src="readme.txt" target="" />
-  </files>
 </package>
