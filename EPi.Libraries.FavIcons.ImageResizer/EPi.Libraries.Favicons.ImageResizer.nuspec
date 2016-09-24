@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<package xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <projectUrl>https://github.com/jstemerdink/EPi.Libraries.Favicons/</projectUrl>
+    <iconUrl>http://jstemerdink.net/images/js-nuget.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright © Jeroen Stemerdink 2016</copyright>
+    <tags>icons seo imageresizer</tags>
+    <dependencies>
+      <dependency id="EPi.Libraries.Favicons" version="3.0.0" />
+      <dependency id="ImageResizer" version="3.4.3" />
+    </dependencies>
+  </metadata>
+</package>
