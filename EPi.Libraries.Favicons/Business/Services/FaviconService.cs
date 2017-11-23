@@ -80,6 +80,10 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// <value>The synchronized object instance cache.</value>
         private Injected<ISynchronizedObjectInstanceCache> SynchronizedObjectInstanceCache { get; set; }
 
+        /// <summary>
+        /// Gets or sets the content cache key creator.
+        /// </summary>
+        /// <value>The content cache key creator.</value>
         private Injected<IContentCacheKeyCreator> ContentCacheKeyCreator { get; set; }
 
         /// <summary>
