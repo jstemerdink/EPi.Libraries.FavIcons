@@ -5,17 +5,17 @@
     <id>$id$</id>
     <version>$version$</version>
     <title>$title$</title>
-    <authors>$author$</authors>
-    <owners>$author$</owners>
+    <authors>Jeroen Stemerdink</authors>
+    <owners>Jeroen Stemerdink</owners>
     <projectUrl>https://github.com/jstemerdink/EPi.Libraries.Favicons/</projectUrl>
     <iconUrl>http://jstemerdink.net/images/js-nuget.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>$description$</description>
+    <description>Image resizing service for use within EPi.Libraries.Favicons</description>
     <releaseNotes></releaseNotes>
     <copyright>Copyright © Jeroen Stemerdink 2016</copyright>
     <tags>icons seo imageresizer</tags>
     <dependencies>
-      <dependency id="EPi.Libraries.Favicons" version="3.0.0" />
+      <dependency id="EPi.Libraries.Favicons" version="4.0.0" />
       <dependency id="ImageResizer" version="3.4.3" />
     </dependencies>
   </metadata>

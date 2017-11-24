@@ -1,4 +1,4 @@
-﻿// Copyright © 2016 Jeroen Stemerdink. 
+﻿// Copyright © 2017 Jeroen Stemerdink. 
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -21,11 +21,11 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-using System;
-using System.Web.Mvc;
-
 namespace EPi.Libraries.Favicons.Attributes
 {
+    using System;
+    using System.Web.Mvc;
+
     /// <summary>
     ///     Requires that a HTTP request does not contain a trailing slash. If it does, return a 404 Not Found. This is
     ///     useful if you are dynamically generating something which acts like it's a file on the web server.
@@ -36,8 +36,14 @@ namespace EPi.Libraries.Favicons.Attributes
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public sealed class NoTrailingSlashAttribute : FilterAttribute, IAuthorizationFilter
     {
+        /// <summary>
+        /// The query character
+        /// </summary>
         private const char QueryCharacter = '?';
 
+        /// <summary>
+        /// The slash character
+        /// </summary>
         private const char SlashCharacter = '/';
 
         /// <summary>
@@ -95,6 +101,7 @@ namespace EPi.Libraries.Favicons.Attributes
             }
             catch (NotImplementedException)
             {
+                // Nothing to handle, as it's not implemented.
             }
         }
 
