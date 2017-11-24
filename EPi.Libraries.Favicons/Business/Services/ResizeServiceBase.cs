@@ -1,4 +1,4 @@
-﻿// Copyright © 2016 Jeroen Stemerdink.
+﻿// Copyright © 2017 Jeroen Stemerdink.
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -21,22 +21,22 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-using System;
-using System.IO;
-using System.Linq;
-
-using EPiServer;
-using EPiServer.Core;
-using EPiServer.DataAbstraction;
-using EPiServer.DataAccess;
-using EPiServer.Framework.Blobs;
-using EPiServer.Logging;
-using EPiServer.Security;
-using EPiServer.ServiceLocation;
-using EPiServer.Web;
-
 namespace EPi.Libraries.Favicons.Business.Services
 {
+    using System;
+    using System.IO;
+    using System.Linq;
+
+    using EPiServer;
+    using EPiServer.Core;
+    using EPiServer.DataAbstraction;
+    using EPiServer.DataAccess;
+    using EPiServer.Framework.Blobs;
+    using EPiServer.Logging;
+    using EPiServer.Security;
+    using EPiServer.ServiceLocation;
+    using EPiServer.Web;
+
     /// <summary>
     ///     Abstract Class ResizeService.
     /// </summary>

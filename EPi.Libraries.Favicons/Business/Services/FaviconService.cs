@@ -1,4 +1,4 @@
-﻿// Copyright © 2016 Jeroen Stemerdink.
+﻿// Copyright © 2017 Jeroen Stemerdink.
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -57,34 +57,46 @@ namespace EPi.Libraries.Favicons.Business.Services
         private static readonly ILogger Logger = LogManager.GetLogger();
 
         /// <summary>
-        ///     Gets or sets the content repository.
+        /// The content repository
         /// </summary>
-        /// <value>The content repository.</value>
-        private Injected<IContentRepository> ContentRepository { get; set; }
+        private readonly IContentRepository contentRepository;
 
         /// <summary>
-        ///     Gets or sets the content type repository.
+        /// The content type repository
         /// </summary>
-        /// <value>The content type repository.</value>
-        private Injected<IContentTypeRepository> ContentTypeRepository { get; set; }
+        private readonly IContentTypeRepository contentTypeRepository;
 
         /// <summary>
-        ///     Gets or sets the content model usage.
+        /// The content model usage
         /// </summary>
-        /// <value>The content model usage.</value>
-        private Injected<IContentModelUsage> ContentModelUsage { get; set; }
+        private readonly IContentModelUsage contentModelUsage;
 
         /// <summary>
-        ///     Gets or sets the synchronized object instance cache.
+        /// The synchronized object instance cache
         /// </summary>
-        /// <value>The synchronized object instance cache.</value>
-        private Injected<ISynchronizedObjectInstanceCache> SynchronizedObjectInstanceCache { get; set; }
+        private readonly ISynchronizedObjectInstanceCache synchronizedObjectInstanceCache;
 
         /// <summary>
-        /// Gets or sets the content cache key creator.
+        /// The content cache key creator
         /// </summary>
-        /// <value>The content cache key creator.</value>
-        private Injected<IContentCacheKeyCreator> ContentCacheKeyCreator { get; set; }
+        private readonly IContentCacheKeyCreator contentCacheKeyCreator;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FaviconService" /> class.
+        /// </summary>
+        /// <param name="contentRepository">The content repository.</param>
+        /// <param name="contentTypeRepository">The content type repository.</param>
+        /// <param name="contentModelUsage">The content model usage.</param>
+        /// <param name="synchronizedObjectInstanceCache">The synchronized object instance cache.</param>
+        /// <param name="contentCacheKeyCreator">The content cache key creator.</param>
+        public FaviconService(IContentRepository contentRepository, IContentTypeRepository contentTypeRepository, IContentModelUsage contentModelUsage, ISynchronizedObjectInstanceCache synchronizedObjectInstanceCache, IContentCacheKeyCreator contentCacheKeyCreator)
+        {
+            this.contentRepository = contentRepository;
+            this.contentTypeRepository = contentTypeRepository;
+            this.contentModelUsage = contentModelUsage;
+            this.synchronizedObjectInstanceCache = synchronizedObjectInstanceCache;
+            this.contentCacheKeyCreator = contentCacheKeyCreator;
+        }
 
         /// <summary>
         ///     Gets the browserconfig XML for the current site. This allows you to customize the tile, when a user pins
@@ -246,7 +258,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// <summary>
         ///     Gets the icon path.
         /// </summary>
-        /// <returns>System.String.</returns>
+        /// <returns>The virtual icon path.</returns>
         public string GetVirtualIconPath()
         {
             try
@@ -264,18 +276,14 @@ namespace EPi.Libraries.Favicons.Business.Services
             return string.Empty;
         }
 
-        /// <summary>
-        ///     Gets the favicon settings.
-        /// </summary>
-        /// <returns>FaviconSettings.</returns>
-        /// <exception cref="InvalidOperationException">
-        ///     [Favicons] No settings defined. Use ContainsSettings attribute on your
-        ///     ContentType .
+        /// <summary>Gets the favicon settings.</summary>
+        /// <returns> An instance of the <see cref="FaviconSettings"/>. </returns>
+        /// <exception cref="InvalidOperationException">[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .
         /// </exception>
         public FaviconSettings GetFaviconSettings()
         {
            FaviconSettings faviconSettings =
-                this.SynchronizedObjectInstanceCache.Service.Get(FaviconSettings.FaviconCacheKey) as FaviconSettings;
+                this.synchronizedObjectInstanceCache.Get(FaviconSettings.FaviconCacheKey) as FaviconSettings;
 
             if (faviconSettings != null)
             {
@@ -285,7 +293,7 @@ namespace EPi.Libraries.Favicons.Business.Services
             IContent content;
 
             ContentType type =
-                this.ContentTypeRepository.Service.List()
+                this.contentTypeRepository.List()
                     .FirstOrDefault(c => HasAttribute<ContainsSettingsAttribute>(c.ModelType));
 
             if (type == null)
@@ -294,7 +302,7 @@ namespace EPi.Libraries.Favicons.Business.Services
                     "[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .");
             }
 
-            ContentUsage settingsUsage = this.ContentModelUsage.Service.ListContentOfContentType(type).FirstOrDefault();
+            ContentUsage settingsUsage = this.contentModelUsage.ListContentOfContentType(type).FirstOrDefault();
 
             if (settingsUsage == null)
             {
@@ -302,7 +310,7 @@ namespace EPi.Libraries.Favicons.Business.Services
                     "[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .");
             }
 
-            this.ContentRepository.Service.TryGet(settingsUsage.ContentLink.ToReferenceWithoutVersion(), out content);
+            this.contentRepository.TryGet(settingsUsage.ContentLink.ToReferenceWithoutVersion(), out content);
 
 
             faviconSettings = this.SetFaviconSettings(content as ContentData);
@@ -310,11 +318,10 @@ namespace EPi.Libraries.Favicons.Business.Services
             return faviconSettings;
         }
 
-        /// <summary>
-        ///     Gets the favicon settings.
-        /// </summary>
-        /// <returns>FaviconSettings.</returns>
-        /// <exception cref="InvalidOperationException">[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .</exception>
+        /// <summary> Gets the favicon settings. </summary>
+        /// <param name="contentData"> The content Data. </param>
+        /// <returns> An instance of the <see cref="FaviconSettings"/>. </returns> 
+        /// <exception cref="InvalidOperationException"> [Favicons] No settings defined. Use ContainsSettings attribute on your ContentType . </exception>
         public FaviconSettings SetFaviconSettings(ContentData contentData)
         {
             if (contentData == null)
@@ -323,7 +330,7 @@ namespace EPi.Libraries.Favicons.Business.Services
                     "[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .");
             }
 
-            this.SynchronizedObjectInstanceCache.Service.Remove(FaviconSettings.FaviconCacheKey);
+            this.synchronizedObjectInstanceCache.Remove(FaviconSettings.FaviconCacheKey);
 
             string applicationName = this.GetPropertyValue<ApplicationNameAttribute, string>(contentData);
             string applicationShortName = this.GetPropertyValue<ApplicationShortNameAttribute, string>(contentData);
@@ -359,12 +366,12 @@ namespace EPi.Libraries.Favicons.Business.Services
                                                           !ContentReference.IsNullOrEmpty(mobileAppIconReference)
                                                   };
 
-            string cacheKey = this.ContentCacheKeyCreator.Service.CreateCommonCacheKey(SiteDefinition.Current.StartPage);
+            string cacheKey = this.contentCacheKeyCreator.CreateCommonCacheKey(SiteDefinition.Current.StartPage);
 
             CacheEvictionPolicy cacheEvictionPolicy =
                 new CacheEvictionPolicy(new[] { cacheKey });
 
-            this.SynchronizedObjectInstanceCache.Service.Insert(FaviconSettings.FaviconCacheKey, faviconSettings, cacheEvictionPolicy);
+            this.synchronizedObjectInstanceCache.Insert(FaviconSettings.FaviconCacheKey, faviconSettings, cacheEvictionPolicy);
 
             return faviconSettings;
         }
@@ -375,7 +382,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// <typeparam name="T">The type of the attribute to check for.</typeparam>
         /// <typeparam name="TO">The type of the class to check.</typeparam>
         /// <param name="contentData">The content data.</param>
-        /// <returns>TO.</returns>
+        /// <returns>The value of the property.</returns>
         public TO GetPropertyValue<T, TO>(ContentData contentData) where T : Attribute where TO : class
         {
             if (contentData == null)
@@ -384,7 +391,7 @@ namespace EPi.Libraries.Favicons.Business.Services
             }
 
             PropertyInfo propertyInfo =
-                contentData.GetType().GetProperties().Where(this.HasAttribute<T>).FirstOrDefault();
+                contentData.GetType().GetProperties().FirstOrDefault(HasAttribute<T>);
 
             if (propertyInfo == null)
             {
@@ -400,11 +407,11 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// <typeparam name="T">The type of the attribute to check for.</typeparam>
         /// <typeparam name="TO">The type of the class to check.</typeparam>
         /// <param name="contentReference">The content reference.</param>
-        /// <returns>TO.</returns>
+        /// <returns>The value of the property.</returns>
         public TO GetPropertyValue<T, TO>(ContentReference contentReference) where T : Attribute where TO : class
         {
             ContentData contentData;
-            this.ContentRepository.Service.TryGet(contentReference, out contentData);
+            this.contentRepository.TryGet(contentReference, out contentData);
 
             return contentData == null ? default(TO) : this.GetPropertyValue<T, TO>(contentData);
         }
@@ -446,10 +453,10 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// <summary>
         ///     Determines whether the specified self has attribute.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">The attribute type.</typeparam>
         /// <param name="propertyInfo">The propertyInfo.</param>
         /// <returns><c>true</c> if the specified self has attribute; otherwise, <c>false</c>.</returns>
-        private bool HasAttribute<T>(PropertyInfo propertyInfo) where T : Attribute
+        private static bool HasAttribute<T>(PropertyInfo propertyInfo) where T : Attribute
         {
             T attr = default(T);
 
@@ -459,6 +466,7 @@ namespace EPi.Libraries.Favicons.Business.Services
             }
             catch (Exception)
             {
+                // Assume the property is not there when an exception is thrown
             }
 
             return attr != null;
@@ -467,7 +475,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// <summary>
         ///     Determines whether the specified member information has attribute.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">The attribute type.</typeparam>
         /// <param name="memberInfo">The member information.</param>
         /// <returns><c>true</c> if the specified member information has attribute; otherwise, <c>false</c>.</returns>
         private static bool HasAttribute<T>(MemberInfo memberInfo) where T : Attribute
@@ -480,6 +488,7 @@ namespace EPi.Libraries.Favicons.Business.Services
             }
             catch (Exception)
             {
+                // Assume the property is not there when an exception is thrown
             }
 
             return attr != null;

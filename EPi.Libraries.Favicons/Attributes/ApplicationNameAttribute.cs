@@ -1,4 +1,4 @@
-﻿// Copyright © 2016 Jeroen Stemerdink. 
+﻿// Copyright © 2017 Jeroen Stemerdink. 
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -21,10 +21,10 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-using System;
-
 namespace EPi.Libraries.Favicons.Attributes
 {
+    using System;
+
     /// <summary>
     ///     Class ApplicationNameAttribute. This class cannot be inherited.
     /// </summary>

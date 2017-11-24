@@ -1,4 +1,4 @@
-﻿// Copyright © 2016 Jeroen Stemerdink. 
+﻿// Copyright © 2017 Jeroen Stemerdink. 
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -21,24 +21,24 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-using System;
-using System.Globalization;
-using System.IO;
-
-using EPi.Libraries.Favicons.Business.Services;
-
-using EPiServer;
-using EPiServer.Core;
-using EPiServer.DataAbstraction;
-using EPiServer.DataAccess;
-using EPiServer.Framework.Blobs;
-using EPiServer.Logging;
-using EPiServer.ServiceLocation;
-
-using ImageResizer;
-
 namespace EPi.Libraries.Favicons.ImageResizer
 {
+    using System;
+    using System.Globalization;
+    using System.IO;
+
+    using EPi.Libraries.Favicons.Business.Services;
+
+    using EPiServer;
+    using EPiServer.Core;
+    using EPiServer.DataAbstraction;
+    using EPiServer.DataAccess;
+    using EPiServer.Framework.Blobs;
+    using EPiServer.Logging;
+    using EPiServer.ServiceLocation;
+
+    using global::ImageResizer;
+
     /// <summary>
     ///     Class ResizeService.
     /// </summary>
@@ -62,19 +62,19 @@ namespace EPi.Libraries.Favicons.ImageResizer
             int width,
             int height)
         {
-            //Get a suitable MediaData type from extension
+            // Get a suitable MediaData type from extension
             Type mediaType = this.ContentMediaResolver.Service.GetFirstMatching(".png");
 
             ContentType contentType = this.ContentTypeRepository.Service.Load(mediaType);
 
             try
             {
-                //Get a new empty file data
+                // Get a new empty file data
                 ImageData media = this.ContentRepository.Service.GetDefault<ImageData>(rootFolder, contentType.ID);
 
                 media.Name = string.Format(CultureInfo.InvariantCulture, "{0}-{1}x{2}.png", filePrefix, width, height);
 
-                //Create a blob in the binary container
+                // Create a blob in the binary container
                 Blob blob = this.BlobFactory.Service.CreateBlob(media.BinaryDataContainer, ".png");
 
                 ImageJob imageJob = new ImageJob(
@@ -94,7 +94,7 @@ namespace EPi.Libraries.Favicons.ImageResizer
 
                 imageJob.Build();
 
-                //Assign to file and publish changes
+                // Assign to file and publish changes
                 media.BinaryData = blob;
                 this.ContentRepository.Service.Save(media, SaveAction.Publish);
             }
