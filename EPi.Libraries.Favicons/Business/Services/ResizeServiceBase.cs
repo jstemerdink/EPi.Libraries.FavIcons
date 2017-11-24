@@ -1,4 +1,4 @@
-﻿// Copyright © 2016 Jeroen Stemerdink.
+﻿// Copyright © 2017 Jeroen Stemerdink.
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -21,22 +21,22 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-using System;
-using System.IO;
-using System.Linq;
-
-using EPiServer;
-using EPiServer.Core;
-using EPiServer.DataAbstraction;
-using EPiServer.DataAccess;
-using EPiServer.Framework.Blobs;
-using EPiServer.Logging;
-using EPiServer.Security;
-using EPiServer.ServiceLocation;
-using EPiServer.Web;
-
 namespace EPi.Libraries.Favicons.Business.Services
 {
+    using System;
+    using System.IO;
+    using System.Linq;
+
+    using EPiServer;
+    using EPiServer.Core;
+    using EPiServer.DataAbstraction;
+    using EPiServer.DataAccess;
+    using EPiServer.Framework.Blobs;
+    using EPiServer.Logging;
+    using EPiServer.Security;
+    using EPiServer.ServiceLocation;
+    using EPiServer.Web;
+
     /// <summary>
     ///     Abstract Class ResizeService.
     /// </summary>
@@ -135,7 +135,6 @@ namespace EPi.Libraries.Favicons.Business.Services
         ///     Creates the favicons.
         /// </summary>
         /// <param name="iconReference">The icon reference.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         public virtual void CreateMobileAppIcons(ContentReference iconReference)
         {
             if (ContentReference.IsNullOrEmpty(iconReference))
@@ -216,22 +215,9 @@ namespace EPi.Libraries.Favicons.Business.Services
             int height);
 
         /// <summary>
-        ///     Gets the or create favicons folder.
-        /// </summary>
-        /// <returns>ContentReference.</returns>
-        protected ContentReference GetOrCreateFaviconsFolder()
-        {
-            ContentReference rootFolder = GetAssetsRootFolder();
-
-            ContentFolder faviconsFolder = this.GetOrCreateFolder(rootFolder, "Favicons");
-
-            return faviconsFolder == null ? ContentReference.EmptyReference : faviconsFolder.ContentLink;
-        }
-
-        /// <summary>
         ///     Gets the assets root folder.
         /// </summary>
-        /// <returns>ContentReference.</returns>
+        /// <returns>The <see cref="ContentReference"/> for the rootfolder of the assests.</returns>
         protected static ContentReference GetAssetsRootFolder()
         {
             ContentReference rootFolder = SiteDefinition.Current.SiteAssetsRoot;
@@ -242,6 +228,19 @@ namespace EPi.Libraries.Favicons.Business.Services
             }
 
             return rootFolder;
+        }
+
+        /// <summary>
+        ///     Gets the or create favicons folder.
+        /// </summary>
+        /// <returns>The <see cref="ContentReference"/> for the folder of the favicons.</returns>
+        protected ContentReference GetOrCreateFaviconsFolder()
+        {
+            ContentReference rootFolder = GetAssetsRootFolder();
+
+            ContentFolder faviconsFolder = this.GetOrCreateFolder(rootFolder, "Favicons");
+
+            return faviconsFolder == null ? ContentReference.EmptyReference : faviconsFolder.ContentLink;
         }
 
         /// <summary>
