@@ -135,7 +135,6 @@ namespace EPi.Libraries.Favicons.Business.Services
         ///     Creates the favicons.
         /// </summary>
         /// <param name="iconReference">The icon reference.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         public virtual void CreateMobileAppIcons(ContentReference iconReference)
         {
             if (ContentReference.IsNullOrEmpty(iconReference))
@@ -216,22 +215,9 @@ namespace EPi.Libraries.Favicons.Business.Services
             int height);
 
         /// <summary>
-        ///     Gets the or create favicons folder.
-        /// </summary>
-        /// <returns>ContentReference.</returns>
-        protected ContentReference GetOrCreateFaviconsFolder()
-        {
-            ContentReference rootFolder = GetAssetsRootFolder();
-
-            ContentFolder faviconsFolder = this.GetOrCreateFolder(rootFolder, "Favicons");
-
-            return faviconsFolder == null ? ContentReference.EmptyReference : faviconsFolder.ContentLink;
-        }
-
-        /// <summary>
         ///     Gets the assets root folder.
         /// </summary>
-        /// <returns>ContentReference.</returns>
+        /// <returns>The <see cref="ContentReference"/> for the rootfolder of the assests.</returns>
         protected static ContentReference GetAssetsRootFolder()
         {
             ContentReference rootFolder = SiteDefinition.Current.SiteAssetsRoot;
@@ -242,6 +228,19 @@ namespace EPi.Libraries.Favicons.Business.Services
             }
 
             return rootFolder;
+        }
+
+        /// <summary>
+        ///     Gets the or create favicons folder.
+        /// </summary>
+        /// <returns>The <see cref="ContentReference"/> for the folder of the favicons.</returns>
+        protected ContentReference GetOrCreateFaviconsFolder()
+        {
+            ContentReference rootFolder = GetAssetsRootFolder();
+
+            ContentFolder faviconsFolder = this.GetOrCreateFolder(rootFolder, "Favicons");
+
+            return faviconsFolder == null ? ContentReference.EmptyReference : faviconsFolder.ContentLink;
         }
 
         /// <summary>
