@@ -1,4 +1,4 @@
-// Copyright © 2017 Jeroen Stemerdink. 
+// Copyright © 2022 Jeroen Stemerdink. 
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -22,17 +22,18 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
-using System.Web.Routing;
 
 using EPi.Libraries.Favicons.Models;
 
 using EPiServer.Core;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EPi.Libraries.Favicons.Business.Services
 {
     /// <summary>
     ///     Interface IFaviconService
     /// </summary>
+    [CLSCompliant(false)]
     public interface IFaviconService
     {
         /// <summary>
@@ -40,10 +41,10 @@ namespace EPi.Libraries.Favicons.Business.Services
         ///     the site to their Windows 8/10 start screen. See http://www.buildmypinnedsite.com and
         ///     https://msdn.microsoft.com/en-us/library/dn320426%28v=vs.85%29.aspx
         /// </summary>
-        /// <param name="requestContext">The request context.</param>
+        /// <param name="actionContext">The request context.</param>
         /// <returns>The browserconfig XML for the current site.</returns>
         /// <remarks>Code based on https://github.com/RehanSaeed/ASP.NET-MVC-Boilerplate</remarks>
-        string GetBrowserConfigXml(RequestContext requestContext);
+        string GetBrowserConfigXml(ActionContext actionContext);
 
         /// <summary>
         ///     Gets the manifest JSON for the current site. This allows you to customize the icon and other browser
@@ -52,10 +53,10 @@ namespace EPi.Libraries.Favicons.Business.Services
         ///     information. See https://developer.chrome.com/multidevice/android/installtohomescreen for Chrome's
         ///     implementation.
         /// </summary>
-        /// <param name="requestContext">The request context.</param>
+        /// <param name="actionContext">The request context.</param>
         /// <returns>The manifest JSON for the current site.</returns>
         /// <remarks>Code based on https://github.com/RehanSaeed/ASP.NET-MVC-Boilerplate</remarks>
-        string GetManifestJson(RequestContext requestContext);
+        string GetManifestJson(ActionContext actionContext);
 
         /// <summary>
         ///     Gets the icon path.

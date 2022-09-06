@@ -1,4 +1,4 @@
-﻿// Copyright © 2017 Jeroen Stemerdink.
+﻿// Copyright © 2022 Jeroen Stemerdink.
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -98,35 +98,34 @@ namespace EPi.Libraries.Favicons.Business.Services
                 return false;
             }
 
-            using (Stream s = faviconImageData.BinaryData.OpenRead())
-            {
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 57, 57);
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 60, 60);
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 72, 72);
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 76, 76);
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 114, 114);
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 120, 120);
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 144, 144);
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 152, 152);
-                this.CreateFavicon(rootfolder, s, "apple-touch-icon", 180, 180);
+            byte[] s = ReadStreamFully(faviconImageData.BinaryData.OpenRead());
 
-                this.CreateFavicon(rootfolder, s, "mstile", 70, 70);
-                this.CreateFavicon(rootfolder, s, "mstile", 150, 150);
-                this.CreateFavicon(rootfolder, s, "mstile", 310, 310);
-                this.CreateFavicon(rootfolder, s, "mstile", 310, 150);
+            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 57, 57);
+            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 60, 60);
+            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 72, 72);
+            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 76, 76);
+            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 114, 114);
+            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 120, 120);
+            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 144, 144);
+            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 152, 152);
+            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 180, 180);
 
-                this.CreateFavicon(rootfolder, s, "android-chrome", 36, 36);
-                this.CreateFavicon(rootfolder, s, "android-chrome", 48, 48);
-                this.CreateFavicon(rootfolder, s, "android-chrome", 72, 72);
-                this.CreateFavicon(rootfolder, s, "android-chrome", 96, 96);
-                this.CreateFavicon(rootfolder, s, "android-chrome", 144, 144);
-                this.CreateFavicon(rootfolder, s, "android-chrome", 192, 192);
+            this.CreateFavicon(rootfolder, s, "mstile", 70, 70);
+            this.CreateFavicon(rootfolder, s, "mstile", 150, 150);
+            this.CreateFavicon(rootfolder, s, "mstile", 310, 310);
+            this.CreateFavicon(rootfolder, s, "mstile", 310, 150);
 
-                this.CreateFavicon(rootfolder, s, "favicon", 16, 16);
-                this.CreateFavicon(rootfolder, s, "favicon", 32, 32);
-                this.CreateFavicon(rootfolder, s, "favicon", 96, 96);
-                this.CreateFavicon(rootfolder, s, "favicon", 192, 192);
-            }
+            this.CreateFavicon(rootfolder, s, "android-chrome", 36, 36);
+            this.CreateFavicon(rootfolder, s, "android-chrome", 48, 48);
+            this.CreateFavicon(rootfolder, s, "android-chrome", 72, 72);
+            this.CreateFavicon(rootfolder, s, "android-chrome", 96, 96);
+            this.CreateFavicon(rootfolder, s, "android-chrome", 144, 144);
+            this.CreateFavicon(rootfolder, s, "android-chrome", 192, 192);
+
+            this.CreateFavicon(rootfolder, s, "favicon", 16, 16);
+            this.CreateFavicon(rootfolder, s, "favicon", 32, 32);
+            this.CreateFavicon(rootfolder, s, "favicon", 96, 96);
+            this.CreateFavicon(rootfolder, s, "favicon", 192, 192);
 
             return true;
         }
@@ -156,17 +155,16 @@ namespace EPi.Libraries.Favicons.Business.Services
                 return;
             }
 
-            using (Stream s = faviconImageData.BinaryData.OpenRead())
-            {
-                this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 1536, 2008);
-                this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 1496, 2048);
-                this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 768, 1004);
-                this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 748, 1024);
-                this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 640, 1096);
-                this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 640, 1096);
-                this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 640, 920);
-                this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 320, 460);
-            }
+            byte[] s = ReadStreamFully(faviconImageData.BinaryData.OpenRead());
+
+            this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 1536, 2008);
+            this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 1496, 2048);
+            this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 768, 1004);
+            this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 748, 1024);
+            this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 640, 1096);
+            this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 640, 1096);
+            this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 640, 920);
+            this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 320, 460);
         }
 
         /// <summary>
@@ -209,10 +207,29 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// <param name="height">The height.</param>
         public abstract void CreateFavicon(
             ContentReference rootFolder,
-            Stream originalFile,
+            byte[] originalFile,
             string filePrefix,
             int width,
             int height);
+
+        /// <summary>
+        /// Reads the stream fully.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns>A byte array.</returns>
+        protected static byte[] ReadStreamFully(Stream input)
+        {
+            if (input == null)
+            {
+                return Array.Empty<byte>();
+            }
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                input.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
 
         /// <summary>
         ///     Gets the assets root folder.

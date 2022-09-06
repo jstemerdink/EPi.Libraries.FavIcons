@@ -1,4 +1,4 @@
-﻿// Copyright © 2017 Jeroen Stemerdink. 
+﻿// Copyright © 2022 Jeroen Stemerdink. 
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -22,7 +22,6 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 using System.Text;
-using System.Web.Mvc;
 
 using EPi.Libraries.Favicons.Attributes;
 using EPi.Libraries.Favicons.Business.Services;
@@ -31,10 +30,14 @@ using EPiServer.ServiceLocation;
 
 namespace EPi.Libraries.Favicons.Controllers
 {
+    using Microsoft.AspNetCore.Mvc;
+    using System;
+
     /// <summary>
     ///     Class FaviconController.
     /// </summary>
-    public class FaviconController : Controller
+    [CLSCompliant(false)]
+    public class FaviconController : Microsoft.AspNetCore.Mvc.Controller
     {
         /// <summary>
         ///     Gets or sets the favicon service.
@@ -49,12 +52,12 @@ namespace EPi.Libraries.Favicons.Controllers
         /// </summary>
         /// <returns>The browserconfig XML for the current site.</returns>
         [NoTrailingSlash]
-        [OutputCache(CacheProfile = "BrowserConfigXml")]
+        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
         [Route("browserconfig.xml", Name = "GetBrowserConfigXml")]
-        public ContentResult BrowserConfigXml()
+        public Microsoft.AspNetCore.Mvc.ContentResult BrowserConfigXml()
         {
-            string content = this.FaviconService.Service.GetBrowserConfigXml(this.ControllerContext.RequestContext);
-            return this.Content(content, "Xml", Encoding.UTF8);
+            string content = this.FaviconService.Service.GetBrowserConfigXml(this.ControllerContext);
+            return this.Content(content, @"application/xml", Encoding.UTF8);
         }
 
         /// <summary>
@@ -66,12 +69,13 @@ namespace EPi.Libraries.Favicons.Controllers
         /// </summary>
         /// <returns>The manifest JSON for the current site.</returns>
         [NoTrailingSlash]
-        [OutputCache(CacheProfile = "ManifestJson")]
+        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
         [Route("manifest.json", Name = "GetManifestJson")]
-        public ContentResult ManifestJson()
+        public Microsoft.AspNetCore.Mvc.ContentResult ManifestJson()
         {
-            string content = this.FaviconService.Service.GetManifestJson(this.ControllerContext.RequestContext);
-            return this.Content(content, "Json", Encoding.UTF8);
+            string content = this.FaviconService.Service.GetManifestJson(this.ControllerContext);
+            ////return this.Content(content, "Json", Encoding.UTF8);
+            return this.Content(content, @"application/json", Encoding.UTF8);
         }
     }
 }
