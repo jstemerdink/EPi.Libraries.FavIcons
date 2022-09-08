@@ -1,4 +1,4 @@
-﻿// Copyright © 2017 Jeroen Stemerdink.
+﻿// Copyright © 2022 Jeroen Stemerdink.
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -25,8 +25,6 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Web.Mvc;
-using System.Web.Routing;
 using System.Xml.Linq;
 
 using EPi.Libraries.Favicons.Attributes;
@@ -45,6 +43,9 @@ using Newtonsoft.Json.Linq;
 
 namespace EPi.Libraries.Favicons.Business.Services
 {
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Mvc.Routing;
+
     /// <summary>
     ///     Class FaviconService.
     /// </summary>
@@ -103,14 +104,15 @@ namespace EPi.Libraries.Favicons.Business.Services
         ///     the site to their Windows 8/10 start screen. See http://www.buildmypinnedsite.com and
         ///     https://msdn.microsoft.com/en-us/library/dn320426%28v=vs.85%29.aspx
         /// </summary>
-        /// <param name="requestContext">The request context.</param>
+        /// <param name="actionContext">The request context.</param>
         /// <returns>The browserconfig XML for the current site.</returns>
         /// <remarks>Code based on https://github.com/RehanSaeed/ASP.NET-MVC-Boilerplate</remarks>
-        public string GetBrowserConfigXml(RequestContext requestContext)
+        [CLSCompliant(false)]
+        public string GetBrowserConfigXml(ActionContext actionContext)
         {
             try
             {
-                UrlHelper urlHelper = new UrlHelper(requestContext);
+                UrlHelper urlHelper = new UrlHelper(actionContext);
                 FaviconSettings faviconSettings = this.GetFaviconSettings();
                 string iconsPath = this.GetVirtualIconPath();
 
@@ -139,6 +141,7 @@ namespace EPi.Libraries.Favicons.Business.Services
 
                 XDocument document =
                     new XDocument(
+                        new XDeclaration("1.0", "utf-8", "yes"),
                         new XElement(
                             "browserconfig",
                             new XElement(
@@ -176,12 +179,13 @@ namespace EPi.Libraries.Favicons.Business.Services
         ///     information. See https://developer.chrome.com/multidevice/android/installtohomescreen for Chrome's
         ///     implementation.
         /// </summary>
-        /// <param name="requestContext">The request context.</param>
+        /// <param name="actionContext">The request context.</param>
         /// <returns>The manifest JSON for the current site.</returns>
         /// <remarks>Code based on https://github.com/RehanSaeed/ASP.NET-MVC-Boilerplate</remarks>
-        public string GetManifestJson(RequestContext requestContext)
+        [CLSCompliant(false)]
+        public string GetManifestJson(ActionContext actionContext)
         {
-            UrlHelper urlHelper = new UrlHelper(requestContext);
+            UrlHelper urlHelper = new UrlHelper(actionContext);
             FaviconSettings faviconSettings = this.GetFaviconSettings();
             string iconsPath = this.GetVirtualIconPath();
 

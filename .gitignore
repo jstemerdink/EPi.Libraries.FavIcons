@@ -152,3 +152,5 @@ $RECYCLE.BIN/
 .DS_Store
 
 /.vs/config/applicationhost.config
+.vs/
+EPi.Libraries.Favicons/modules/
