@@ -15,6 +15,8 @@ By Jeroen Stemerdink
 
 Resizing service for use in EPi.Libraries.Favicons that uses [ImageResizer](http://imageresizing.net) to resize your images.
 
+#### Note
+I kept the name of the package the same, but it uses ImageFlow the version for .Net 5/6
 
 > *Powered by ReSharper*
 
