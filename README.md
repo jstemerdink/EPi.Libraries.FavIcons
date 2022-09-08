@@ -9,8 +9,7 @@ By Jeroen Stemerdink
 [![Platform](https://img.shields.io/badge/EPiServer-%2012-orange.svg?style=flat)](http://world.episerver.com/cms/)
 [![NuGet](https://img.shields.io/badge/NuGet-Release-blue.svg)](http://nuget.episerver.com/en/OtherPages/Package/?packageId=EPi.Libraries.Favicons)
 [![GitHub license](https://img.shields.io/badge/license-MIT%20license-blue.svg?style=flat)](LICENSE)
-[![Quality Gate](https://sonarcloud.io/api/badges/gate?key=jstemerdink:EPi.Libraries.Favicons)](https://sonarcloud.io/dashboard?id=jstemerdink%3AEPi.Libraries.Favicons)
-
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=jstemerdink%3AEPi.Libraries.Favicons&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=jstemerdink%3AEPi.Libraries.Favicons)
 ## Instructions
 
 Add the following attribute to the ContentType you use for your settings
