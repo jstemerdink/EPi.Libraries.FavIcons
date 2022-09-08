@@ -1,4 +1,4 @@
-﻿// Copyright © 2017 Jeroen Stemerdink. 
+﻿// Copyright © 2022 Jeroen Stemerdink. 
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -24,7 +24,10 @@
 namespace EPi.Libraries.Favicons.Attributes
 {
     using System;
-    using System.Web.Mvc;
+
+    using Microsoft.AspNetCore.Http.Extensions;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Mvc.Filters;
 
     /// <summary>
     ///     Requires that a HTTP request does not contain a trailing slash. If it does, return a 404 Not Found. This is
@@ -34,7 +37,7 @@ namespace EPi.Libraries.Favicons.Attributes
     /// </summary>
     /// <remarks>Code based on https://github.com/RehanSaeed/ASP.NET-MVC-Boilerplate</remarks>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
-    public sealed class NoTrailingSlashAttribute : FilterAttribute, IAuthorizationFilter
+    public sealed class NoTrailingSlashAttribute : Attribute, IAuthorizationFilter
     {
         /// <summary>
         /// The query character
@@ -54,21 +57,24 @@ namespace EPi.Libraries.Favicons.Attributes
         ///     An object that encapsulates information that is required in order to use the
         ///     <see cref="RequireHttpsAttribute" /> attribute.
         /// </param>
-        public void OnAuthorization(AuthorizationContext filterContext)
+        [CLSCompliant(false)]
+        public void OnAuthorization(AuthorizationFilterContext filterContext)
         {
             if (filterContext == null)
             {
                 return;
             }
 
-            if (filterContext.HttpContext.Request.Url == null)
+            string displayUrl = filterContext.HttpContext?.Request?.GetDisplayUrl();
+
+            if (string.IsNullOrWhiteSpace(displayUrl))
             {
                 return;
             }
 
             try
             {
-                string canonicalUrl = filterContext.HttpContext.Request.Url.ToString();
+                string canonicalUrl = displayUrl;
 
                 int queryIndex = canonicalUrl.IndexOf(QueryCharacter);
 
@@ -112,9 +118,9 @@ namespace EPi.Libraries.Favicons.Attributes
         ///     An object that encapsulates information that is required in order to use the
         ///     <see cref="RequireHttpsAttribute" /> attribute.
         /// </param>
-        private static void HandleTrailingSlashRequest(AuthorizationContext filterContext)
+        private static void HandleTrailingSlashRequest(AuthorizationFilterContext filterContext)
         {
-            filterContext.Result = new HttpNotFoundResult();
+            filterContext.Result = new NotFoundResult();
         }
     }
 }

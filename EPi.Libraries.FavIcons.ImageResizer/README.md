@@ -3,17 +3,20 @@
 By Jeroen Stemerdink
 
 [![Build status](https://ci.appveyor.com/api/projects/status/cfp88oa4mh8h2fci?svg=true)](https://ci.appveyor.com/project/jstemerdink/epi-libraries-favicons)
-[![GitHub version](https://badge.fury.io/gh/jstemerdink%2FEPi.Libraries.Favicons.ImageResizer.svg)](http://badge.fury.io/gh/jstemerdink%2FEPi.Libraries.Favicons.ImageResizer)
-[![Platform](https://img.shields.io/badge/platform-.NET%204.6.1-blue.svg?style=flat)](https://msdn.microsoft.com/en-us/library/w0x726c2%28v=vs.110%29.aspx)
-[![Platform](https://img.shields.io/badge/EPiServer-%2011.0.0-orange.svg?style=flat)](http://world.episerver.com/cms/)
+[![GitHub version](https://badge.fury.io/gh/jstemerdink%2FEPi.Libraries.Favicons.svg)](http://badge.fury.io/gh/jstemerdink%2FEPi.Libraries.Favicons)
+[![Platform](https://img.shields.io/badge/platform-.NET%205-blue.svg?style=flat)](https://msdn.microsoft.com/en-us/library/w0x726c2%28v=vs.110%29.aspx)
+[![Platform](https://img.shields.io/badge/platform-.NET%206-blue.svg?style=flat)](https://msdn.microsoft.com/en-us/library/w0x726c2%28v=vs.110%29.aspx)
+[![Platform](https://img.shields.io/badge/EPiServer-%2012-orange.svg?style=flat)](http://world.episerver.com/cms/)
 [![NuGet](https://img.shields.io/badge/NuGet-Release-blue.svg)](http://nuget.episerver.com/en/OtherPages/Package/?packageId=EPi.Libraries.Favicons.ImageResizer)
 [![GitHub license](https://img.shields.io/badge/license-MIT%20license-blue.svg?style=flat)](../LICENSE)
-[![Quality Gate](https://sonarcloud.io/api/badges/gate?key=jstemerdink:EPi.Libraries.Favicons)](https://sonarcloud.io/dashboard?id=jstemerdink%3AEPi.Libraries.Favicons)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=jstemerdink%3AEPi.Libraries.Favicons&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=jstemerdink%3AEPi.Libraries.Favicons)
 
 ## Description
 
 Resizing service for use in EPi.Libraries.Favicons that uses [ImageResizer](http://imageresizing.net) to resize your images.
 
+#### Note
+I kept the name of the package the same, but it uses ImageFlow the version for .Net 5/6
 
 > *Powered by ReSharper*
 

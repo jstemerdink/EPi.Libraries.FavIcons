@@ -1,4 +1,4 @@
-﻿// Copyright © 2017 Jeroen Stemerdink. 
+﻿// Copyright © 2022 Jeroen Stemerdink. 
 // 
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -37,7 +37,10 @@ namespace EPi.Libraries.Favicons.ImageResizer
     using EPiServer.Logging;
     using EPiServer.ServiceLocation;
 
-    using global::ImageResizer;
+    using Imageflow.Bindings;
+    using Imageflow.Fluent;
+
+    using Microsoft.CodeAnalysis.CSharp.Syntax;
 
     /// <summary>
     ///     Class ResizeService.
@@ -51,13 +54,13 @@ namespace EPi.Libraries.Favicons.ImageResizer
         ///     Creates the favicon.
         /// </summary>
         /// <param name="rootFolder">The root folder.</param>
-        /// <param name="originalFile">The original file.</param>
+        /// <param name="imageBytes">The original file.</param>
         /// <param name="filePrefix">The file prefix.</param>
         /// <param name="width">The width.</param>
         /// <param name="height">The height.</param>
         public override void CreateFavicon(
             ContentReference rootFolder,
-            Stream originalFile,
+            byte[] imageBytes,
             string filePrefix,
             int width,
             int height)
@@ -69,6 +72,28 @@ namespace EPi.Libraries.Favicons.ImageResizer
 
             try
             {
+                if (imageBytes.Length == 0)
+                {
+                    Logger.Debug("[Favicons] Error creating icon. Original file is empty.");
+                    return;
+                }
+
+                ArraySegment<byte>? processedImageData = this.ProcessImage(imageBytes, width, height);
+
+                if (!processedImageData.HasValue)
+                {
+                    Logger.Debug("[Favicons] Error creating icon. Processed file is empty.");
+                    return;
+                }
+
+                byte[] processedImageBytes = processedImageData.Value.Array;
+
+                if (processedImageBytes?.Length == 0)
+                {
+                    Logger.Debug("[Favicons] Error creating icon. Processed file is empty.");
+                    return;
+                }
+
                 // Get a new empty file data
                 ImageData media = this.ContentRepository.Service.GetDefault<ImageData>(rootFolder, contentType.ID);
 
@@ -76,23 +101,8 @@ namespace EPi.Libraries.Favicons.ImageResizer
 
                 // Create a blob in the binary container
                 Blob blob = this.BlobFactory.Service.CreateBlob(media.BinaryDataContainer, ".png");
-
-                ImageJob imageJob = new ImageJob(
-                    originalFile,
-                    blob.OpenWrite(),
-                    new Instructions(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "width={0}&height={1}&crop=auto&format=png",
-                            width,
-                            height)))
-                                        {
-                                            ResetSourceStream = true,
-                                            DisposeDestinationStream = true,
-                                            DisposeSourceObject = false
-                                        };
-
-                imageJob.Build();
+                
+                blob.WriteAllBytes(processedImageBytes);
 
                 // Assign to file and publish changes
                 media.BinaryData = blob;
@@ -109,6 +119,27 @@ namespace EPi.Libraries.Favicons.ImageResizer
             catch (FormatException formatException)
             {
                 Logger.Error("[Favicons] Error creating icon.", formatException);
+            }
+            catch (Exception exception)
+            {
+                Logger.Error("[Favicons] Error creating icon.", exception);
+            }
+        }
+
+        private ArraySegment<byte>? ProcessImage(byte[] imageBytes, int width, int height)
+        {
+            using (ImageJob b = new())
+            {
+                BuildNode buildNode = b.Decode(imageBytes);
+
+                BuildJobResult r = buildNode
+                    .ResizerCommands($"width={width}&height={height}&crop=auto&format=png")
+                    .EncodeToBytes(new PngQuantEncoder(100, 80))
+                    .Finish()
+                    .InProcessAsync()
+                    .Result;
+
+                return r.First.TryGetBytes();
             }
         }
     }
