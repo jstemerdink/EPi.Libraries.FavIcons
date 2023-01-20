@@ -17,7 +17,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup>
-	  <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
+	  <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
 	  <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 	  <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 	  <NoWin32Manifest>true</NoWin32Manifest>
@@ -63,4 +63,16 @@
 		  <PackagePath>\</PackagePath>
 	  </Content>
   </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+		<None Update="EPi.Libraries.Favicons.ImageResizer.targets">
+			<Pack>True</Pack>
+			<PackagePath>build\net6.0\</PackagePath>
+		</None>
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
+		<None Update="EPi.Libraries.Favicons.ImageResizer.targets">
+			<Pack>True</Pack>
+			<PackagePath>build\net7.0\</PackagePath>
+		</None>
+	</ItemGroup>
 </Project>
