@@ -44,11 +44,19 @@ public virtual string ApplicationShortName { get; set; } >> defaults to the name
 ```
 
 
-Add [ImageResizer](EPi.Libraries.Favicons.ImageResizer/README.md) package to your solution or create your own resizing service.
+Add [ImageResizer](EPi.Libraries.Favicons.ImageResizer/README.md) package to your solution
+
+OR
+ 
+Add [ImageProcessor](EPi.Libraries.Favicons.ImageProcessor/README.md) package to your solution
+
+OR
+
+Create your own resizing service.
 
 *You can create your own service by implementing IResizeService or ResizeServiceBase*
 
-Add the following to your header in your _Root.cshtml file to render the markup:
+Add the following to your header to render the markup:
 
 ```
 @{
@@ -56,7 +64,7 @@ Add the following to your header in your _Root.cshtml file to render the markup:
 }
 ```
 
-Enable MVC Attribute Routing
+Add MVC in your startup
 
 ## Parts
 
