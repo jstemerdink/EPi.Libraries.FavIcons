@@ -1,7 +1,4 @@
-﻿NOTE: If you are updating from version 1.2, please add the ContainsSettings attribute to it and republish the start page with the icons. 
-They will be stored as Blobs from now on, which is much cleaner and better suited for Azure.
-
-Add the following attribute to the ContentType you use for your settings
+﻿Add the following attribute to the ContentType you use for your settings
 
 [ContainsSettings]
 
@@ -55,13 +52,15 @@ Add properties to the ContentType you use for your settings and add the attribut
 
 
 
-Add the following to your header in your _Root.cshtml file to render the markup:
+Add the following to your header to render the markup:
 
-@{ Html.RenderPartial("Favicons");}
+@{
+    await Html.RenderPartialAsync("_Favicons");
+}
 
 
 
-Don't forget to enable MVC Attribute routing. ( RouteTable.Routes.MapMvcAttributeRoutes(); )
+Don't forget to add MVC in your startup
 
-NOTE: If you are updating from version 1.3, please add EPi.Libraries.FavIcons.ImageResizer to your solution, or implement your own resizing service 
+NOTE: Please add EPi.Libraries.FavIcons.ImageResizer or EPi.Libraries.Favicons.ImageProcessor to your solution, or implement your own resizing service 
 
