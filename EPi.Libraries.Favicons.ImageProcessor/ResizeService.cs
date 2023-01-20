@@ -1,5 +1,5 @@
-﻿// Copyright © 2022 Jeroen Stemerdink. 
-// 
+﻿// Copyright © 2023 Jeroen Stemerdink.
+//
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
 // files (the "Software"), to deal in the Software without
@@ -8,10 +8,10 @@
 // copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following
 // conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 // OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -21,11 +21,13 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-namespace EPi.Libraries.Favicons.ImageResizer
+namespace EPi.Libraries.Favicons.ImageProcessor
 {
     using System;
+    using System.Drawing;
     using System.Globalization;
-   
+    using System.IO;
+
     using EPi.Libraries.Favicons.Business.Services;
 
     using EPiServer;
@@ -36,7 +38,8 @@ namespace EPi.Libraries.Favicons.ImageResizer
     using EPiServer.Logging;
     using EPiServer.ServiceLocation;
 
-    using Imageflow.Fluent;
+    using global::ImageProcessor;
+    using global::ImageProcessor.Imaging.Formats;
 
     /// <summary>
     ///     Class ResizeService.
@@ -68,28 +71,6 @@ namespace EPi.Libraries.Favicons.ImageResizer
 
             try
             {
-                if (imageBytes.Length == 0)
-                {
-                    Logger.Debug("[Favicons] Error creating icon. Original file is empty.");
-                    return;
-                }
-
-                ArraySegment<byte>? processedImageData = this.ProcessImage(imageBytes, width, height);
-
-                if (!processedImageData.HasValue)
-                {
-                    Logger.Debug("[Favicons] Error creating icon. Processed file is empty.");
-                    return;
-                }
-
-                byte[] processedImageBytes = processedImageData.Value.Array;
-
-                if (processedImageBytes?.Length == 0)
-                {
-                    Logger.Debug("[Favicons] Error creating icon. Processed file is empty.");
-                    return;
-                }
-
                 // Get a new empty file data
                 ImageData media = this.ContentRepository.Service.GetDefault<ImageData>(rootFolder, contentType.ID);
 
@@ -97,12 +78,26 @@ namespace EPi.Libraries.Favicons.ImageResizer
 
                 // Create a blob in the binary container
                 Blob blob = this.BlobFactory.Service.CreateBlob(media.BinaryDataContainer, ".png");
-                
-                blob.WriteAllBytes(processedImageBytes);
 
-                // Assign to file and publish changes
-                media.BinaryData = blob;
-                this.ContentRepository.Service.Save(media, SaveAction.Publish);
+                ISupportedImageFormat format = new PngFormat();
+                Size size = new Size(width, height);
+
+                using (MemoryStream outStream = new MemoryStream())
+                {
+                    // Initialize the ImageFactory using the overload to preserve EXIF metadata.
+                    using (ImageFactory imageFactory = new ImageFactory(preserveExifData: true))
+                    {
+                        // Load, resize, set the format and quality and save an image.
+                        imageFactory.Load(imageBytes)
+                                    .Resize(size)
+                                    .Format(format)
+                                    .Save(outStream);
+                    }
+
+                    // Assign to file and publish changes
+                    media.BinaryData = blob;
+                    this.ContentRepository.Service.Save(media, SaveAction.Publish);
+                }
             }
             catch (AccessDeniedException accessDeniedException)
             {
@@ -115,27 +110,6 @@ namespace EPi.Libraries.Favicons.ImageResizer
             catch (FormatException formatException)
             {
                 Logger.Error("[Favicons] Error creating icon.", formatException);
-            }
-            catch (Exception exception)
-            {
-                Logger.Error("[Favicons] Error creating icon.", exception);
-            }
-        }
-
-        private ArraySegment<byte>? ProcessImage(byte[] imageBytes, int width, int height)
-        {
-            using (ImageJob b = new())
-            {
-                BuildNode buildNode = b.Decode(imageBytes);
-
-                BuildJobResult r = buildNode
-                    .ResizerCommands($"width={width}&height={height}&crop=auto&format=png")
-                    .EncodeToBytes(new PngQuantEncoder(100, 80))
-                    .Finish()
-                    .InProcessAsync()
-                    .Result;
-
-                return r.First.TryGetBytes();
             }
         }
     }
