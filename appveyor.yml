@@ -28,10 +28,13 @@ build_script:
 after_build:
 - cmd: appveyor PushArtifact "%APPVEYOR_BUILD_FOLDER%\EPi.Libraries.Favicons\bin\Release\EPi.Libraries.Favicons.%GitVersion_NuGetVersion%.nupkg"
 - cmd: appveyor PushArtifact "%APPVEYOR_BUILD_FOLDER%\EPi.Libraries.Favicons.ImageResizer\bin\Release\EPi.Libraries.Favicons.ImageResizer.%GitVersion_NuGetVersion%.nupkg"
+- cmd: appveyor PushArtifact "%APPVEYOR_BUILD_FOLDER%\EPi.Libraries.Favicons.ImageProcessor\bin\Release\EPi.Libraries.Favicons.ImageProcessor.%GitVersion_NuGetVersion%.nupkg"
 - 7z a EPi.Libraries.Favicons.%GitVersion_NuGetVersion%.zip %APPVEYOR_BUILD_FOLDER%\EPi.Libraries.Favicons\bin\Release\*\*.dll 
 - cmd: appveyor PushArtifact "EPi.Libraries.Favicons.%GitVersion_NuGetVersion%.zip"
 - 7z a EPi.Libraries.Favicons.ImageResizer.%GitVersion_NuGetVersion%.zip %APPVEYOR_BUILD_FOLDER%\EPi.Libraries.Favicons.ImageResizer\bin\Release\*\*.dll 
 - cmd: appveyor PushArtifact "EPi.Libraries.Favicons.ImageResizer.%GitVersion_NuGetVersion%.zip"
+- 7z a EPi.Libraries.Favicons.ImageProcessor.%GitVersion_NuGetVersion%.zip %APPVEYOR_BUILD_FOLDER%\EPi.Libraries.Favicons.ImageProcessor\bin\Release\*\*.dll 
+- cmd: appveyor PushArtifact "EPi.Libraries.Favicons.ImageProcessor.%GitVersion_NuGetVersion%.zip"
 
 before_package:
 - ps: >-
