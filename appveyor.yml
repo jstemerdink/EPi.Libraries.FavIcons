@@ -53,7 +53,7 @@ deploy:
     #appveyor_repo_tag: true     # deploy on tag push only
 - provider: GitHub
   auth_token:
-    secure: TaDEavUfTj6EgwcO7y5njQVS5Z9bBU/fVFuSApo5XEO6FSBT5UzJQmyJjbhIFDZb
+    secure: zuJGSRrCtrCyD+zy7ZNSoSW7XRq8fYp8ouAyCNHCL5I78Rg+rRU9OsOynyHCJqaS
   artifact: /.*\.zip/
   on:
     branch: master              # release from master branch only
