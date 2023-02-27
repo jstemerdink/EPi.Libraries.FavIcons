@@ -2,7 +2,7 @@ version: 1.0.{build}
 image: Visual Studio 2022
 configuration: Release
 environment:
-  github_token: 'secure: zuJGSRrCtrCyD+zy7ZNSoSW7XRq8fYp8ouAyCNHCL5I78Rg+rRU9OsOynyHCJqaS'
+  github_token: 'secure: fHV/gr0ZsTCsP6jPh2iNcWWybr2a6cRqdhTS5/hpKqFoWb2ixXAO+Ob9Y78B6kiI'
   myget_token: 'secure: 9Z+KYPk2hI7hg9kYLv/N13fvoqcYCP96isNUkRrKu0v87cw85H62oe/DCwpqvBXF'
 
 init:
@@ -53,7 +53,7 @@ deploy:
     #appveyor_repo_tag: true     # deploy on tag push only
 - provider: GitHub
   auth_token:
-    secure: zuJGSRrCtrCyD+zy7ZNSoSW7XRq8fYp8ouAyCNHCL5I78Rg+rRU9OsOynyHCJqaS
+    secure: fHV/gr0ZsTCsP6jPh2iNcWWybr2a6cRqdhTS5/hpKqFoWb2ixXAO+Ob9Y78B6kiI
   artifact: /.*\.zip/
   on:
     branch: master              # release from master branch only
