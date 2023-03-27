@@ -26,7 +26,7 @@
     <None Remove="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\LICENSE">
+    <None Include="..\license.txt">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
@@ -72,7 +72,6 @@
 	  <IsPublishable>False</IsPublishable>
 	  <Authors>Jeroen Stemerdink</Authors>
 	  <Company>Jeroen Stemerdink</Company>
-	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
 	  <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
 	  <IsPackable>true</IsPackable>
   </PropertyGroup>
