@@ -31,7 +31,6 @@
 	  <PackageReleaseNotes>Update for Episerver CMS 12</PackageReleaseNotes>
 	  <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
 	  <Authors>Jeroen Stemerdink</Authors>
-	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
 	  <IsPackable>true</IsPackable>
   </PropertyGroup>
   <ItemGroup>

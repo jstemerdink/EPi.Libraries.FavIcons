@@ -72,7 +72,6 @@
 	  <IsPublishable>False</IsPublishable>
 	  <Authors>Jeroen Stemerdink</Authors>
 	  <Company>Jeroen Stemerdink</Company>
-	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
 	  <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
 	  <IsPackable>true</IsPackable>
   </PropertyGroup>
