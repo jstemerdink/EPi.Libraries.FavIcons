@@ -1,25 +1,25 @@
-﻿// Copyright © 2022 Jeroen Stemerdink. 
-// 
-// Permission is hereby granted, free of charge, to any person
-// obtaining a copy of this software and associated documentation
-// files (the "Software"), to deal in the Software without
-// restriction, including without limitation the rights to use,
-// copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following
-// conditions:
-// 
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-// OTHER DEALINGS IN THE SOFTWARE.
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="FaviconInitialization.cs" company="Jeroen Stemerdink">
+//      Copyright © 2023 Jeroen Stemerdink.
+//      Permission is hereby granted, free of charge, to any person obtaining a copy
+//      of this software and associated documentation files (the "Software"), to deal
+//      in the Software without restriction, including without limitation the rights
+//      to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//      copies of the Software, and to permit persons to whom the Software is
+//      furnished to do so, subject to the following conditions:
+//
+//      The above copyright notice and this permission notice shall be included in all
+//      copies or substantial portions of the Software.
+//
+//      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//      IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//      FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//      AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//      LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//      SOFTWARE.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace EPi.Libraries.Favicons.Business.Initialization
 {
@@ -56,25 +56,19 @@ namespace EPi.Libraries.Favicons.Business.Initialization
         ///     Gets or sets the content events.
         /// </summary>
         /// <value>The content events.</value>
-        private Injected<IContentEvents> ContentEvents { get; set; }
+        private IContentEvents ContentEvents { get; set; }
 
         /// <summary>
         ///     Gets or sets the favicon service.
         /// </summary>
         /// <value>The favicon service.</value>
-        private Injected<IFaviconService> FaviconService { get; set; }
+        private IFaviconService FaviconService { get; set; }
 
         /// <summary>
         ///     Gets or sets the resizing service.
         /// </summary>
         /// <value>The resizing service.</value>
-        private Injected<IResizeService> ResizeService { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the synchronized object instance cache.
-        /// </summary>
-        /// <value>The synchronized object instance cache.</value>
-        private Injected<ISynchronizedObjectInstanceCache> SynchronizedObjectInstanceCache { get; set; }
+        private IResizeService ResizeService { get; set; }
 
         /// <summary>
         ///     Initializes this instance.
@@ -101,8 +95,12 @@ namespace EPi.Libraries.Favicons.Business.Initialization
 
             Logger.Information("[Favicons] Initializing favicons functionality.");
 
+            this.ContentEvents = context.Locate.Advanced.GetInstance<IContentEvents>();
+            this.FaviconService = context.Locate.Advanced.GetInstance<IFaviconService>();
+            this.ResizeService = context.Locate.Advanced.GetInstance<IResizeService>();
+
             // Add initialization logic, this method is called once after CMS has been initialized
-            this.ContentEvents.Service.PublishedContent += this.ServiceOnPublishedContent;
+            this.ContentEvents.PublishedContent += this.ServiceOnPublishedContent;
 
             initialized = true;
 
@@ -144,7 +142,7 @@ namespace EPi.Libraries.Favicons.Business.Initialization
             Logger.Information("[Favicons] Uninitializing favicons functionality.");
 
             // Add uninitialization logic
-            this.ContentEvents.Service.PublishedContent -= this.ServiceOnPublishedContent;
+            this.ContentEvents.PublishedContent -= this.ServiceOnPublishedContent;
 
             Logger.Information("[Favicons] Favicons functionality uninitialized.");
         }
@@ -163,36 +161,36 @@ namespace EPi.Libraries.Favicons.Business.Initialization
                 return;
             }
 
-            if (!this.FaviconService.Service.HasSettings(contentData: contentData))
+            if (!this.FaviconService.HasSettings(contentData: contentData))
             {
                 return;
             }
 
             ContentReference faviconReference =
-                this.FaviconService.Service.GetPropertyValue<WebsiteIconAttribute, ContentReference>(
+                this.FaviconService.GetPropertyValue<WebsiteIconAttribute, ContentReference>(
                     contentData: contentData);
 
             if (ContentReference.IsNullOrEmpty(contentLink: faviconReference))
             {
-                this.ResizeService.Service.DeleteFavicons();
+                this.ResizeService.DeleteFavicons();
                 return;
             }
 
             // Remove the icons. More efficient than getting them one by one and updating them.
-            this.ResizeService.Service.CleanUpFavicons();
+            this.ResizeService.CleanUpFavicons();
 
-            if (!this.ResizeService.Service.CreateFavicons(iconReference: faviconReference))
+            if (!this.ResizeService.CreateFavicons(iconReference: faviconReference))
             {
                 return;
             }
 
             ContentReference mobileAppIconReference =
-                this.FaviconService.Service.GetPropertyValue<MobileAppIconAttribute, ContentReference>(
+                this.FaviconService.GetPropertyValue<MobileAppIconAttribute, ContentReference>(
                     contentData: contentData);
 
-            this.ResizeService.Service.CreateMobileAppIcons(iconReference: mobileAppIconReference);
+            this.ResizeService.CreateMobileAppIcons(iconReference: mobileAppIconReference);
 
-            this.FaviconService.Service.SetFaviconSettings(contentData: contentData);
+            this.FaviconService.SetFaviconSettings(contentData: contentData);
         }
     }
 }

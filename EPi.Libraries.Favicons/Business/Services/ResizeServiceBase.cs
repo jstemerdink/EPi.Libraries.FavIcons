@@ -1,25 +1,25 @@
-﻿// Copyright © 2022 Jeroen Stemerdink.
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="ResizeServiceBase.cs" company="Jeroen Stemerdink">
+//      Copyright © 2023 Jeroen Stemerdink.
+//      Permission is hereby granted, free of charge, to any person obtaining a copy
+//      of this software and associated documentation files (the "Software"), to deal
+//      in the Software without restriction, including without limitation the rights
+//      to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//      copies of the Software, and to permit persons to whom the Software is
+//      furnished to do so, subject to the following conditions:
 //
-// Permission is hereby granted, free of charge, to any person
-// obtaining a copy of this software and associated documentation
-// files (the "Software"), to deal in the Software without
-// restriction, including without limitation the rights to use,
-// copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following
-// conditions:
+//      The above copyright notice and this permission notice shall be included in all
+//      copies or substantial portions of the Software.
 //
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-// OTHER DEALINGS IN THE SOFTWARE.
+//      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//      IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//      FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//      AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//      LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//      SOFTWARE.
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace EPi.Libraries.Favicons.Business.Services
 {
@@ -32,10 +32,10 @@ namespace EPi.Libraries.Favicons.Business.Services
     using EPiServer.DataAbstraction;
     using EPiServer.DataAccess;
     using EPiServer.Framework.Blobs;
-    using EPiServer.Logging;
     using EPiServer.Security;
-    using EPiServer.ServiceLocation;
     using EPiServer.Web;
+
+    using Microsoft.Extensions.Logging;
 
     /// <summary>
     ///     Abstract Class ResizeService.
@@ -43,129 +43,53 @@ namespace EPi.Libraries.Favicons.Business.Services
     /// <seealso cref="EPi.Libraries.Favicons.Business.Services.IResizeService" />
     public abstract class ResizeServiceBase : IResizeService
     {
-        /// <summary>
-        ///     The logger
-        /// </summary>
-        protected static readonly ILogger Logger = LogManager.GetLogger();
+        private readonly ILogger<ResizeServiceBase> logger;
 
         /// <summary>
-        ///     Gets or sets the content repository.
+        /// Initializes a new instance of the <see cref="ResizeServiceBase" /> class.
         /// </summary>
-        /// <value>The content repository.</value>
-        protected Injected<IContentRepository> ContentRepository { get; set; }
+        /// <param name="contentRepository">The content repository.</param>
+        /// <param name="contentTypeRepository">The content type repository.</param>
+        /// <param name="contentMediaResolver">The content media resolver.</param>
+        /// <param name="blobFactory">The BLOB factory.</param>
+        /// <param name="logger">The logger.</param>
+        protected ResizeServiceBase(
+            IContentRepository contentRepository,
+            IContentTypeRepository contentTypeRepository,
+            ContentMediaResolver contentMediaResolver,
+            IBlobFactory blobFactory,
+            ILogger<ResizeServiceBase> logger)
+        {
+            this.ContentRepository = contentRepository;
+            this.ContentTypeRepository = contentTypeRepository;
+            this.ContentMediaResolver = contentMediaResolver;
+            this.BlobFactory = blobFactory;
+            this.logger = logger;
+        }
 
         /// <summary>
-        ///     Gets or sets the content type repository.
-        /// </summary>
-        /// <value>The content type repository.</value>
-        protected Injected<IContentTypeRepository> ContentTypeRepository { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the content media resolver.
-        /// </summary>
-        /// <value>The content media resolver.</value>
-        protected Injected<ContentMediaResolver> ContentMediaResolver { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the BLOB factory.
+        /// Gets the BLOB factory.
         /// </summary>
         /// <value>The BLOB factory.</value>
-        protected Injected<IBlobFactory> BlobFactory { get; set; }
+        public IBlobFactory BlobFactory { get; }
 
         /// <summary>
-        ///     Creates the favicons.
+        /// Gets the content media resolver.
         /// </summary>
-        /// <param name="iconReference">The icon reference.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        public virtual bool CreateFavicons(ContentReference iconReference)
-        {
-            if (ContentReference.IsNullOrEmpty(iconReference))
-            {
-                return false;
-            }
-
-            ContentReference rootfolder = this.GetOrCreateFaviconsFolder();
-
-            if (ContentReference.IsNullOrEmpty(rootfolder))
-            {
-                return false;
-            }
-
-            ImageData faviconImageData;
-
-            if (!this.ContentRepository.Service.TryGet(iconReference, out faviconImageData))
-            {
-                return false;
-            }
-
-            byte[] s = ReadStreamFully(faviconImageData.BinaryData.OpenRead());
-
-            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 57, 57);
-            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 60, 60);
-            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 72, 72);
-            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 76, 76);
-            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 114, 114);
-            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 120, 120);
-            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 144, 144);
-            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 152, 152);
-            this.CreateFavicon(rootfolder, s, "apple-touch-icon", 180, 180);
-
-            this.CreateFavicon(rootfolder, s, "mstile", 70, 70);
-            this.CreateFavicon(rootfolder, s, "mstile", 150, 150);
-            this.CreateFavicon(rootfolder, s, "mstile", 310, 310);
-            this.CreateFavicon(rootfolder, s, "mstile", 310, 150);
-
-            this.CreateFavicon(rootfolder, s, "android-chrome", 36, 36);
-            this.CreateFavicon(rootfolder, s, "android-chrome", 48, 48);
-            this.CreateFavicon(rootfolder, s, "android-chrome", 72, 72);
-            this.CreateFavicon(rootfolder, s, "android-chrome", 96, 96);
-            this.CreateFavicon(rootfolder, s, "android-chrome", 144, 144);
-            this.CreateFavicon(rootfolder, s, "android-chrome", 192, 192);
-
-            this.CreateFavicon(rootfolder, s, "favicon", 16, 16);
-            this.CreateFavicon(rootfolder, s, "favicon", 32, 32);
-            this.CreateFavicon(rootfolder, s, "favicon", 96, 96);
-            this.CreateFavicon(rootfolder, s, "favicon", 192, 192);
-
-            return true;
-        }
+        /// <value>The content media resolver.</value>
+        public ContentMediaResolver ContentMediaResolver { get; }
 
         /// <summary>
-        ///     Creates the favicons.
+        /// Gets the content repository.
         /// </summary>
-        /// <param name="iconReference">The icon reference.</param>
-        public virtual void CreateMobileAppIcons(ContentReference iconReference)
-        {
-            if (ContentReference.IsNullOrEmpty(iconReference))
-            {
-                return;
-            }
+        /// <value>The content repository.</value>
+        public IContentRepository ContentRepository { get; }
 
-            ContentReference rootfolder = this.GetOrCreateFaviconsFolder();
-
-            if (ContentReference.IsNullOrEmpty(rootfolder))
-            {
-                return;
-            }
-
-            ImageData faviconImageData;
-
-            if (!this.ContentRepository.Service.TryGet(iconReference, out faviconImageData))
-            {
-                return;
-            }
-
-            byte[] s = ReadStreamFully(faviconImageData.BinaryData.OpenRead());
-
-            this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 1536, 2008);
-            this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 1496, 2048);
-            this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 768, 1004);
-            this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 748, 1024);
-            this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 640, 1096);
-            this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 640, 1096);
-            this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 640, 920);
-            this.CreateFavicon(rootfolder, s, "apple-touch-startup-image", 320, 460);
-        }
+        /// <summary>
+        /// Gets the content type repository.
+        /// </summary>
+        /// <value>The content type repository.</value>
+        public IContentTypeRepository ContentTypeRepository { get; }
 
         /// <summary>
         ///     Cleans up favicons.
@@ -174,27 +98,12 @@ namespace EPi.Libraries.Favicons.Business.Services
         {
             ContentReference faviconsFolder = this.GetOrCreateFaviconsFolder();
 
-            if (ContentReference.IsNullOrEmpty(faviconsFolder))
+            if (ContentReference.IsNullOrEmpty(contentLink: faviconsFolder))
             {
                 return;
             }
 
-            this.ContentRepository.Service.DeleteChildren(faviconsFolder, true, AccessLevel.NoAccess);
-        }
-
-        /// <summary>
-        ///     Cleans up favicons.
-        /// </summary>
-        public virtual void DeleteFavicons()
-        {
-            ContentReference faviconsFolder = this.GetOrCreateFaviconsFolder();
-
-            if (ContentReference.IsNullOrEmpty(faviconsFolder))
-            {
-                return;
-            }
-
-            this.ContentRepository.Service.Delete(faviconsFolder, true);
+            this.ContentRepository.DeleteChildren(contentLink: faviconsFolder, true, access: AccessLevel.NoAccess);
         }
 
         /// <summary>
@@ -213,10 +122,148 @@ namespace EPi.Libraries.Favicons.Business.Services
             int height);
 
         /// <summary>
+        ///     Creates the favicons.
+        /// </summary>
+        /// <param name="iconReference">The icon reference.</param>
+        /// <returns><c>true</c> if creating the favicons succeeded, <c>false</c> otherwise.</returns>
+        /// <exception cref="IOException">An I/O error occurred.</exception>
+        /// <exception cref="ObjectDisposedException">Either the input stream or the destination stream was closed before the <see cref="M:System.IO.Stream.CopyTo(System.IO.Stream)" /> method was called.</exception>
+        /// <exception cref="NotSupportedException">The current stream does not support reading does not support writing.</exception>
+        /// <exception cref="ArgumentNullException">Either the input stream or the destination stream is <see langword="null" />.</exception>
+        public virtual bool CreateFavicons(ContentReference iconReference)
+        {
+            if (ContentReference.IsNullOrEmpty(contentLink: iconReference))
+            {
+                return false;
+            }
+
+            ContentReference rootfolder = this.GetOrCreateFaviconsFolder();
+
+            if (ContentReference.IsNullOrEmpty(contentLink: rootfolder))
+            {
+                return false;
+            }
+
+            ImageData faviconImageData;
+
+            if (!this.ContentRepository.TryGet(contentLink: iconReference, content: out faviconImageData))
+            {
+                return false;
+            }
+
+            byte[] s = ReadStreamFully(faviconImageData.BinaryData.OpenRead());
+
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "apple-touch-icon", 57, 57);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "apple-touch-icon", 60, 60);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "apple-touch-icon", 72, 72);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "apple-touch-icon", 76, 76);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "apple-touch-icon", 114, 114);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "apple-touch-icon", 120, 120);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "apple-touch-icon", 144, 144);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "apple-touch-icon", 152, 152);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "apple-touch-icon", 180, 180);
+
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "mstile", 70, 70);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "mstile", 150, 150);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "mstile", 310, 310);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "mstile", 310, 150);
+
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "android-chrome", 36, 36);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "android-chrome", 48, 48);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "android-chrome", 72, 72);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "android-chrome", 96, 96);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "android-chrome", 144, 144);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "android-chrome", 192, 192);
+
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "favicon", 16, 16);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "favicon", 32, 32);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "favicon", 96, 96);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "favicon", 192, 192);
+
+            return true;
+        }
+
+        /// <summary>
+        ///     Creates the favicons.
+        /// </summary>
+        /// <param name="iconReference">The icon reference.</param>
+        /// <exception cref="IOException">An I/O error occurred.</exception>
+        /// <exception cref="ObjectDisposedException">Either the input stream or the destination stream was closed before the <see cref="M:System.IO.Stream.CopyTo(System.IO.Stream)" /> method was called.</exception>
+        /// <exception cref="NotSupportedException">The current stream does not support reading does not support writing.</exception>
+        /// <exception cref="ArgumentNullException">Either the input stream or the destination stream is <see langword="null" />.</exception>
+        public virtual void CreateMobileAppIcons(ContentReference iconReference)
+        {
+            if (ContentReference.IsNullOrEmpty(contentLink: iconReference))
+            {
+                return;
+            }
+
+            ContentReference rootfolder = this.GetOrCreateFaviconsFolder();
+
+            if (ContentReference.IsNullOrEmpty(contentLink: rootfolder))
+            {
+                return;
+            }
+
+            ImageData faviconImageData;
+
+            if (!this.ContentRepository.TryGet(contentLink: iconReference, content: out faviconImageData))
+            {
+                return;
+            }
+
+            byte[] s = ReadStreamFully(faviconImageData.BinaryData.OpenRead());
+
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "apple-touch-startup-image", 1536, 2008);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "apple-touch-startup-image", 1496, 2048);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "apple-touch-startup-image", 768, 1004);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "apple-touch-startup-image", 748, 1024);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "apple-touch-startup-image", 640, 1096);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "apple-touch-startup-image", 640, 1096);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "apple-touch-startup-image", 640, 920);
+            this.CreateFavicon(rootFolder: rootfolder, originalFile: s, "apple-touch-startup-image", 320, 460);
+        }
+
+        /// <summary>
+        ///     Cleans up favicons.
+        /// </summary>
+        public virtual void DeleteFavicons()
+        {
+            ContentReference faviconsFolder = this.GetOrCreateFaviconsFolder();
+
+            if (ContentReference.IsNullOrEmpty(contentLink: faviconsFolder))
+            {
+                return;
+            }
+
+            this.ContentRepository.Delete(contentLink: faviconsFolder, true);
+        }
+
+        /// <summary>
+        ///     Gets the assets root folder.
+        /// </summary>
+        /// <returns>The <see cref="ContentReference"/> for the root folder of the assets.</returns>
+        protected static ContentReference GetAssetsRootFolder()
+        {
+            ContentReference rootFolder = SiteDefinition.Current.SiteAssetsRoot;
+
+            if (ContentReference.IsNullOrEmpty(contentLink: rootFolder))
+            {
+                rootFolder = SiteDefinition.Current.GlobalAssetsRoot;
+            }
+
+            return rootFolder;
+        }
+
+        /// <summary>
         /// Reads the stream fully.
         /// </summary>
         /// <param name="input">The input.</param>
         /// <returns>A byte array.</returns>
+        /// <exception cref="IOException">An I/O error occurred.</exception>
+        /// <exception cref="NotSupportedException">The current stream does not support reading does not support writing.</exception>
+        /// <exception cref="ArgumentNullException">Either the input stream or the destination stream is <see langword="null" />.</exception>
+        /// <exception cref="ObjectDisposedException">Either the input stream or the destination stream was closed before the <see cref="M:System.IO.Stream.CopyTo(System.IO.Stream)" /> method was called.</exception>
         protected static byte[] ReadStreamFully(Stream input)
         {
             if (input == null)
@@ -226,25 +273,9 @@ namespace EPi.Libraries.Favicons.Business.Services
 
             using (MemoryStream ms = new MemoryStream())
             {
-                input.CopyTo(ms);
+                input.CopyTo(destination: ms);
                 return ms.ToArray();
             }
-        }
-
-        /// <summary>
-        ///     Gets the assets root folder.
-        /// </summary>
-        /// <returns>The <see cref="ContentReference"/> for the rootfolder of the assests.</returns>
-        protected static ContentReference GetAssetsRootFolder()
-        {
-            ContentReference rootFolder = SiteDefinition.Current.SiteAssetsRoot;
-
-            if (ContentReference.IsNullOrEmpty(rootFolder))
-            {
-                rootFolder = SiteDefinition.Current.GlobalAssetsRoot;
-            }
-
-            return rootFolder;
         }
 
         /// <summary>
@@ -255,7 +286,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         {
             ContentReference rootFolder = GetAssetsRootFolder();
 
-            ContentFolder faviconsFolder = this.GetOrCreateFolder(rootFolder, "Favicons");
+            ContentFolder faviconsFolder = this.GetOrCreateFolder(parentFolder: rootFolder, "Favicons");
 
             return faviconsFolder == null ? ContentReference.EmptyReference : faviconsFolder.ContentLink;
         }
@@ -268,9 +299,12 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// <returns>Stored <c>ContentFolder</c> folder; otherwise created folder.</returns>
         protected ContentFolder GetOrCreateFolder(ContentReference parentFolder, string folderName)
         {
-            ContentFolder storedFolder =
-                this.ContentRepository.Service.GetChildren<ContentFolder>(parentFolder)
-                    .FirstOrDefault(f => string.Compare(f.Name, folderName, StringComparison.OrdinalIgnoreCase) == 0);
+            ContentFolder storedFolder = this.ContentRepository.GetChildren<ContentFolder>(contentLink: parentFolder)
+                .FirstOrDefault(
+                    f => string.Compare(
+                             strA: f.Name,
+                             strB: folderName,
+                             comparisonType: StringComparison.OrdinalIgnoreCase) == 0);
 
             if (storedFolder != null)
             {
@@ -279,28 +313,33 @@ namespace EPi.Libraries.Favicons.Business.Services
 
             ContentFolder parent;
 
-            if (!this.ContentRepository.Service.TryGet(parentFolder, out parent))
+            if (!this.ContentRepository.TryGet(contentLink: parentFolder, content: out parent))
             {
                 return null;
             }
 
             try
             {
-                ContentFolder folder = this.ContentRepository.Service.GetDefault<ContentFolder>(parent.ContentLink);
+                ContentFolder folder = this.ContentRepository.GetDefault<ContentFolder>(parentLink: parent.ContentLink);
                 folder.Name = folderName;
 
-                ContentReference folderReference = this.ContentRepository.Service.Save(
-                    folder,
-                    SaveAction.Publish,
-                    AccessLevel.NoAccess);
+                ContentReference folderReference = this.ContentRepository.Save(
+                    content: folder,
+                    action: SaveAction.Publish,
+                    access: AccessLevel.NoAccess);
 
                 ContentFolder newFolder;
 
-                return !this.ContentRepository.Service.TryGet(folderReference, out newFolder) ? null : newFolder;
+                return !this.ContentRepository.TryGet(contentLink: folderReference, content: out newFolder)
+                           ? null
+                           : newFolder;
             }
             catch (AccessDeniedException accessDeniedException)
             {
-                Logger.Error("[Favicons] Error creating content folder.", accessDeniedException);
+                this.logger.Log(
+                    logLevel: LogLevel.Error,
+                    exception: accessDeniedException,
+                    "[Favicons] Error creating content folder.");
                 return null;
             }
         }
