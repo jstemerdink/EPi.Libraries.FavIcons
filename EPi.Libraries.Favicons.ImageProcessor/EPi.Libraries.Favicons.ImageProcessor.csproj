@@ -34,7 +34,6 @@
 	  <PackageReleaseNotes>Update for Episerver CMS 12</PackageReleaseNotes>
 	  <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
 	  <Authors>Jeroen Stemerdink</Authors>
-	  <PackageLicenseFile>https://github.com/jstemerdink/EPi.Libraries.FavIcons/blob/master/LICENSE</PackageLicenseFile>
 	  <IsPackable>true</IsPackable>
   </PropertyGroup>
   <ItemGroup>
@@ -51,7 +50,7 @@
 		</Content>
 	</ItemGroup>
 	<ItemGroup>
-    <None Include="..\LICENSE">
+    <None Include="..\license.txt">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

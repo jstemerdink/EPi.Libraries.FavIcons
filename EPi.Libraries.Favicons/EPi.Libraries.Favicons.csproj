@@ -23,16 +23,10 @@
     <None Remove="modules\**" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="C:\Users\jeroen.stemerdink\.nuget\packages\episerver.cms.tinymce\3.1.0\contentFiles\any\any\modules\_protected\EPiServer.Cms.TinyMce\EPiServer.Cms.TinyMce.zip" />
-    <None Remove="C:\Users\jeroen.stemerdink\.nuget\packages\episerver.cms.ui.admin\12.4.0\contentFiles\any\any\modules\_protected\EPiServer.Cms.UI.Admin\EPiServer.Cms.UI.Admin.zip" />
-    <None Remove="C:\Users\jeroen.stemerdink\.nuget\packages\episerver.cms.ui.settings\12.4.0\contentFiles\any\any\modules\_protected\EPiServer.Cms.UI.Settings\EPiServer.Cms.UI.Settings.zip" />
-    <None Remove="C:\Users\jeroen.stemerdink\.nuget\packages\episerver.cms.ui.visitorgroups\12.4.0\contentFiles\any\any\modules\_protected\EPiServer.Cms.UI.VisitorGroups\EPiServer.Cms.UI.VisitorGroups.zip" />
-    <None Remove="C:\Users\jeroen.stemerdink\.nuget\packages\episerver.cms.ui\12.4.0\contentFiles\any\any\modules\_protected\CMS\CMS.zip" />
-    <None Remove="C:\Users\jeroen.stemerdink\.nuget\packages\episerver.cms.ui\12.4.0\contentFiles\any\any\modules\_protected\Shell\Shell.zip" />
     <None Remove="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\LICENSE">
+    <None Include="..\license.txt">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
@@ -78,7 +72,6 @@
 	  <IsPublishable>False</IsPublishable>
 	  <Authors>Jeroen Stemerdink</Authors>
 	  <Company>Jeroen Stemerdink</Company>
-	  <PackageLicenseFile>https://github.com/jstemerdink/EPi.Libraries.FavIcons/blob/master/LICENSE</PackageLicenseFile>
 	  <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
 	  <IsPackable>true</IsPackable>
   </PropertyGroup>
