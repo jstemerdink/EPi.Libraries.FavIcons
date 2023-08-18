@@ -28,7 +28,7 @@ namespace EPi.Libraries.Favicons.ImageProcessor
     using System.Globalization;
     using System.IO;
 
-    using EPi.Libraries.Favicons.Business.Services;
+    using Business.Services;
 
     using EPiServer;
     using EPiServer.Core;
@@ -91,13 +91,39 @@ namespace EPi.Libraries.Favicons.ImageProcessor
             int width,
             int height)
         {
-            // Get a suitable MediaData type from extension
-            Type mediaType = this.ContentMediaResolver.GetFirstMatching(".png");
-
-            ContentType contentType = this.ContentTypeRepository.Load(modelType: mediaType);
-
             try
             {
+                byte[] processedImageBytes;
+
+                ISupportedImageFormat format = new PngFormat();
+                Size size = new Size(width: width, height: height);
+
+                using (MemoryStream outStream = new MemoryStream())
+                {
+                    // Initialize the ImageFactory using the overload to preserve EXIF metadata.
+                    using (ImageFactory imageFactory = new ImageFactory(false))
+                    {
+                        // Load, resize, set the format and quality and save an image.
+                        imageFactory.Load(bytes: imageBytes).Resize(size: size).Format(format: format)
+                            .Save(stream: outStream);
+                    }
+
+                    processedImageBytes = outStream.ToArray();
+                }
+
+                if (processedImageBytes?.Length == 0)
+                {
+                    this.logger.Log(
+                        logLevel: LogLevel.Debug,
+                        "[Favicons] Error creating icon. Processed file is empty.");
+                    return;
+                }
+
+                // Get a suitable MediaData type from extension
+                Type mediaType = this.ContentMediaResolver.GetFirstMatching(".png");
+
+                ContentType contentType = this.ContentTypeRepository.Load(modelType: mediaType);
+
                 // Get a new empty file data
                 ImageData media = this.ContentRepository.GetDefault<ImageData>(
                     parentLink: rootFolder,
@@ -113,43 +139,17 @@ namespace EPi.Libraries.Favicons.ImageProcessor
                 // Create a blob in the binary container
                 Blob blob = this.BlobFactory.CreateBlob(id: media.BinaryDataContainer, ".png");
 
-                ISupportedImageFormat format = new PngFormat();
-                Size size = new Size(width: width, height: height);
+                blob.WriteAllBytes(processedImageBytes);
 
-                using (MemoryStream outStream = new MemoryStream())
-                {
-                    // Initialize the ImageFactory using the overload to preserve EXIF metadata.
-                    using (ImageFactory imageFactory = new ImageFactory(true))
-                    {
-                        // Load, resize, set the format and quality and save an image.
-                        imageFactory.Load(bytes: imageBytes).Resize(size: size).Format(format: format)
-                            .Save(stream: outStream);
-                    }
-
-                    // Assign to file and publish changes
-                    media.BinaryData = blob;
-                    this.ContentRepository.Save(content: media, action: SaveAction.Publish);
-                }
+                // Assign to file and publish changes
+                media.BinaryData = blob;
+                this.ContentRepository.Save(content: media, action: SaveAction.Publish);
             }
-            catch (AccessDeniedException accessDeniedException)
+            catch (Exception exception)
             {
                 this.logger.Log(
                     logLevel: LogLevel.Error,
-                    exception: accessDeniedException,
-                    "[Favicons] Error creating icon.");
-            }
-            catch (ArgumentNullException argumentNullException)
-            {
-                this.logger.Log(
-                    logLevel: LogLevel.Error,
-                    exception: argumentNullException,
-                    "[Favicons] Error creating icon.");
-            }
-            catch (FormatException formatException)
-            {
-                this.logger.Log(
-                    logLevel: LogLevel.Error,
-                    exception: formatException,
+                    exception: exception,
                     "[Favicons] Error creating icon.");
             }
         }

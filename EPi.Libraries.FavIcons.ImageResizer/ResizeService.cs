@@ -26,7 +26,7 @@ namespace EPi.Libraries.Favicons.ImageResizer
     using System;
     using System.Globalization;
 
-    using EPi.Libraries.Favicons.Business.Services;
+    using Business.Services;
 
     using EPiServer;
     using EPiServer.Core;
@@ -88,11 +88,6 @@ namespace EPi.Libraries.Favicons.ImageResizer
             int width,
             int height)
         {
-            // Get a suitable MediaData type from extension
-            Type mediaType = this.ContentMediaResolver.GetFirstMatching(".png");
-
-            ContentType contentType = this.ContentTypeRepository.Load(modelType: mediaType);
-
             try
             {
                 if (imageBytes.Length == 0)
@@ -126,6 +121,11 @@ namespace EPi.Libraries.Favicons.ImageResizer
                     return;
                 }
 
+                // Get a suitable MediaData type from extension
+                Type mediaType = this.ContentMediaResolver.GetFirstMatching(".png");
+
+                ContentType contentType = this.ContentTypeRepository.Load(modelType: mediaType);
+
                 // Get a new empty file data
                 ImageData media = this.ContentRepository.GetDefault<ImageData>(
                     parentLink: rootFolder,
@@ -146,27 +146,6 @@ namespace EPi.Libraries.Favicons.ImageResizer
                 // Assign to file and publish changes
                 media.BinaryData = blob;
                 this.ContentRepository.Save(content: media, action: SaveAction.Publish);
-            }
-            catch (AccessDeniedException accessDeniedException)
-            {
-                this.logger.Log(
-                    logLevel: LogLevel.Error,
-                    exception: accessDeniedException,
-                    "[Favicons] Error creating icon.");
-            }
-            catch (ArgumentNullException argumentNullException)
-            {
-                this.logger.Log(
-                    logLevel: LogLevel.Error,
-                    exception: argumentNullException,
-                    "[Favicons] Error creating icon.");
-            }
-            catch (FormatException formatException)
-            {
-                this.logger.Log(
-                    logLevel: LogLevel.Error,
-                    exception: formatException,
-                    "[Favicons] Error creating icon.");
             }
             catch (Exception exception)
             {
