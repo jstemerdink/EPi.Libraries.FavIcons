@@ -21,29 +21,36 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-using System.Text;
-
-using EPi.Libraries.Favicons.Attributes;
-using EPi.Libraries.Favicons.Business.Services;
-
-using EPiServer.ServiceLocation;
-
 namespace EPi.Libraries.Favicons.Controllers
 {
-    using Microsoft.AspNetCore.Mvc;
     using System;
+    using System.Text;
+
+    using Attributes;
+    using Business.Services;
+
+    using Microsoft.AspNetCore.Mvc;
 
     /// <summary>
     ///     Class FaviconController.
     /// </summary>
     [CLSCompliant(false)]
-    public class FaviconController : Microsoft.AspNetCore.Mvc.Controller
+    public class FaviconController : Controller
     {
         /// <summary>
         ///     Gets or sets the favicon service.
         /// </summary>
         /// <value>The favicon service.</value>
-        private Injected<IFaviconService> FaviconService { get; set; }
+        private readonly IFaviconService faviconService;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FaviconController"/> class.
+        /// </summary>
+        /// <param name="faviconService">The favicon service.</param>
+        public FaviconController(IFaviconService faviconService)
+        {
+            this.faviconService = faviconService;
+        }
 
         /// <summary>
         ///     Gets the browserconfig XML for the current site. This allows you to customize the tile, when a user pins
@@ -54,10 +61,10 @@ namespace EPi.Libraries.Favicons.Controllers
         [NoTrailingSlash]
         [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
         [Route("browserconfig.xml", Name = "GetBrowserConfigXml")]
-        public Microsoft.AspNetCore.Mvc.ContentResult BrowserConfigXml()
+        public ContentResult BrowserConfigXml()
         {
-            string content = this.FaviconService.Service.GetBrowserConfigXml(this.ControllerContext);
-            return this.Content(content, @"application/xml", Encoding.UTF8);
+            string content = this.faviconService.GetBrowserConfigXml(actionContext: this.ControllerContext);
+            return this.Content(content: content, @"application/xml", contentEncoding: Encoding.UTF8);
         }
 
         /// <summary>
@@ -71,11 +78,10 @@ namespace EPi.Libraries.Favicons.Controllers
         [NoTrailingSlash]
         [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
         [Route("manifest.json", Name = "GetManifestJson")]
-        public Microsoft.AspNetCore.Mvc.ContentResult ManifestJson()
+        public ContentResult ManifestJson()
         {
-            string content = this.FaviconService.Service.GetManifestJson(this.ControllerContext);
-            ////return this.Content(content, "Json", Encoding.UTF8);
-            return this.Content(content, @"application/json", Encoding.UTF8);
+            string content = this.faviconService.GetManifestJson(actionContext: this.ControllerContext);
+            return this.Content(content: content, @"application/json", contentEncoding: Encoding.UTF8);
         }
     }
 }
