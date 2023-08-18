@@ -1,0 +1,76 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>bin\Debug\EPi.Libraries.Favicons.ImageSharp.XML</DocumentationFile>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>..\Solution Files\EPiServer.Libraries.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>bin\Release\EPi.Libraries.Favicons.ImageSharp.XML</DocumentationFile>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <CodeAnalysisRuleSet>..\Solution Files\EPiServer.Libraries.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>EPiServer.Libraries.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+	  <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+	  <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+	  <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+	  <NoWin32Manifest>true</NoWin32Manifest>
+	  <PackageIcon>icon.png</PackageIcon>
+	  <Copyright>Copyright © Jeroen Stemerdink 2023</Copyright>
+	  <PackageProjectUrl>https://github.com/jstemerdink/EPi.Libraries.Favicons/</PackageProjectUrl>
+	  <Description>Image resizing service for use within EPi.Libraries.Favicons</Description>
+	  <RepositoryUrl>https://github.com/jstemerdink/EPi.Libraries.Favicons/</RepositoryUrl>
+	  <PackageTags>SEO;EPiServerModulePackage</PackageTags>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
+	  <PackageReleaseNotes>New ImageSharp service</PackageReleaseNotes>
+	  <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+	  <Authors>Jeroen Stemerdink</Authors>
+	  <IsPackable>true</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+		<Content Include="icon.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</Content>
+		<Content Include="README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</Content>
+	</ItemGroup>
+	<ItemGroup>
+    <None Include="..\license.txt">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EPi.Libraries.FavIcons\EPi.Libraries.Favicons.csproj" />
+  </ItemGroup>  
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+		<None Update="EPi.Libraries.Favicons.ImageSharp.targets">
+			<Pack>True</Pack>
+			<PackagePath>build\net6.0\</PackagePath>
+		</None>
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
+		<None Update="EPi.Libraries.Favicons.ImageSharp.targets">
+			<Pack>True</Pack>
+			<PackagePath>build\net7.0\</PackagePath>
+		</None>
+	</ItemGroup>
+</Project>
