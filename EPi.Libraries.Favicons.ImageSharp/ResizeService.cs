@@ -21,23 +21,22 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace EPi.Libraries.Favicons.ImageResizer
+namespace EPi.Libraries.Favicons.ImageSharp
 {
     using System;
     using System.Globalization;
-
+    using System.IO;
     using Business.Services;
-
     using EPiServer;
     using EPiServer.Core;
     using EPiServer.DataAbstraction;
     using EPiServer.DataAccess;
     using EPiServer.Framework.Blobs;
     using EPiServer.ServiceLocation;
-
-    using Imageflow.Fluent;
-
     using Microsoft.Extensions.Logging;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Formats.Png;
+    using SixLabors.ImageSharp.Processing;
 
     /// <summary>
     ///     Class ResizeService.
@@ -90,29 +89,20 @@ namespace EPi.Libraries.Favicons.ImageResizer
         {
             try
             {
-                if (imageBytes.Length == 0)
+                byte[] processedImageBytes;
+
+                using (MemoryStream outStream = new MemoryStream())
                 {
-                    this.logger.Log(
-                        logLevel: LogLevel.Debug,
-                        "[Favicons] Error creating icon. Original file is empty.");
-                    return;
+                    using (Image image = Image.Load(imageBytes))
+                    {
+                        image.Mutate(x => x.Resize(width, height, KnownResamplers.Lanczos3));
+
+                        image.Save(outStream, new PngEncoder());
+                    }
+
+                    processedImageBytes = outStream.ToArray();
                 }
-
-                ArraySegment<byte>? processedImageData = this.ProcessImage(
-                    imageBytes: imageBytes,
-                    width: width,
-                    height: height);
-
-                if (!processedImageData.HasValue)
-                {
-                    this.logger.Log(
-                        logLevel: LogLevel.Debug,
-                        "[Favicons] Error creating icon. Processed file is empty.");
-                    return;
-                }
-
-                byte[] processedImageBytes = processedImageData.Value.Array;
-
+                
                 if (processedImageBytes?.Length == 0)
                 {
                     this.logger.Log(
@@ -141,7 +131,7 @@ namespace EPi.Libraries.Favicons.ImageResizer
                 // Create a blob in the binary container
                 Blob blob = this.BlobFactory.CreateBlob(id: media.BinaryDataContainer, ".png");
 
-                blob.WriteAllBytes(data: processedImageBytes);
+                blob.WriteAllBytes(processedImageBytes);
 
                 // Assign to file and publish changes
                 media.BinaryData = blob;
@@ -149,20 +139,10 @@ namespace EPi.Libraries.Favicons.ImageResizer
             }
             catch (Exception exception)
             {
-                this.logger.Log(logLevel: LogLevel.Error, exception: exception, "[Favicons] Error creating icon.");
-            }
-        }
-
-        private ArraySegment<byte>? ProcessImage(byte[] imageBytes, int width, int height)
-        {
-            using (ImageJob b = new())
-            {
-                BuildNode buildNode = b.Decode(source: imageBytes);
-
-                BuildJobResult r = buildNode.ResizerCommands($"width={width}&height={height}&crop=auto&format=png")
-                    .EncodeToBytes(new PngQuantEncoder(100, 80)).Finish().InProcessAsync().Result;
-
-                return r.First.TryGetBytes();
+                this.logger.Log(
+                    logLevel: LogLevel.Error,
+                    exception: exception,
+                    "[Favicons] Error creating icon.");
             }
         }
     }

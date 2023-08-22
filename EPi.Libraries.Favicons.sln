@@ -8,13 +8,15 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Files", "Solution Files", "{5F451CD5-A044-400A-ADCC-573E68BFFAE4}"
 	ProjectSection(SolutionItems) = preProject
 		appveyor.yml = appveyor.yml
-		LICENSE = LICENSE
+		license.txt = license.txt
 		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPi.Libraries.Favicons.ImageResizer", "EPi.Libraries.FavIcons.ImageResizer\EPi.Libraries.Favicons.ImageResizer.csproj", "{E10B62E4-CB90-4520-8B38-4B9426538BF7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPi.Libraries.Favicons.ImageProcessor", "EPi.Libraries.Favicons.ImageProcessor\EPi.Libraries.Favicons.ImageProcessor.csproj", "{58FFBE0C-B5A2-40EE-947B-BB89FD0F7DAD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPi.Libraries.Favicons.ImageSharp", "EPi.Libraries.Favicons.ImageSharp\EPi.Libraries.Favicons.ImageSharp.csproj", "{325A435D-0C29-41AA-8056-D5B8E7E066C1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +36,10 @@ Global
 		{58FFBE0C-B5A2-40EE-947B-BB89FD0F7DAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58FFBE0C-B5A2-40EE-947B-BB89FD0F7DAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58FFBE0C-B5A2-40EE-947B-BB89FD0F7DAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{325A435D-0C29-41AA-8056-D5B8E7E066C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{325A435D-0C29-41AA-8056-D5B8E7E066C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{325A435D-0C29-41AA-8056-D5B8E7E066C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{325A435D-0C29-41AA-8056-D5B8E7E066C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
