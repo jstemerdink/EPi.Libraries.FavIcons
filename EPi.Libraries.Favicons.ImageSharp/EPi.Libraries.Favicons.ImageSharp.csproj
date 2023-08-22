@@ -73,4 +73,7 @@
 			<PackagePath>build\net7.0\</PackagePath>
 		</None>
 	</ItemGroup>
+	<ItemGroup>
+	  <PackageReference Include="EPiServer.ImageLibrary.ImageSharp" Version="[1.0.0,2)" />
+	</ItemGroup>
 </Project>

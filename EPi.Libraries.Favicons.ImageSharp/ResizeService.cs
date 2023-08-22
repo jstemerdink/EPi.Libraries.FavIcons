@@ -93,8 +93,7 @@ namespace EPi.Libraries.Favicons.ImageSharp
 
                 using (MemoryStream outStream = new MemoryStream())
                 {
-                    ReadOnlySpan<byte> imageByteSpan = new(imageBytes);
-                    using (Image image = Image.Load(imageByteSpan, new PngDecoder()))
+                    using (Image image = Image.Load(imageBytes))
                     {
                         image.Mutate(x => x.Resize(width, height, KnownResamplers.Lanczos3));
 
