@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="ThemeColorAttribute.cs" company="Jeroen Stemerdink">
+// <copyright file="AssemblyInfo.cs" company="Jeroen Stemerdink">
 //      Copyright © 2023 Jeroen Stemerdink.
 //      Permission is hereby granted, free of charge, to any person obtaining a copy
 //      of this software and associated documentation files (the "Software"), to deal
@@ -21,30 +21,16 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace EPi.Libraries.Favicons.Attributes
-{
-    using System;
+using System;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
-    /// <summary>
-    ///     Class ThemeColorAttribute. This class cannot be inherited.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Property)]
-    public sealed class ThemeColorAttribute : Attribute
-    {
-        #region Public Properties
+// Setting ComVisible to false makes the types in this assembly not visible
+// to COM components.  If you need to access a type in this assembly from
+// COM, set the ComVisible attribute to true on that type.
+[assembly: ComVisible(false)]
+[assembly: CLSCompliant(false)]
 
-        /// <summary>
-        ///     Gets a value indicating whether the property is used for the theme color.
-        /// </summary>
-        /// <value><c>true</c> if [used for the theme color]; otherwise, <c>false</c>.</value>
-        public static bool ThemeColor
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        #endregion
-    }
-}
+// The following GUID is for the ID of the typelib if this project is exposed to COM
+[assembly: Guid("C0B3115F-499C-4AE8-9376-40B7844B407B")]
