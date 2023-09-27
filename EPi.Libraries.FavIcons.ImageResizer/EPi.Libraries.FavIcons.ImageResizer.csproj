@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
   </PropertyGroup>
@@ -49,7 +49,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Imageflow.AllPlatforms" Version="0.8.5" />
+    <PackageReference Include="Imageflow.AllPlatforms" Version="0.10.2" />
     <PackageReference Include="Imageflow.Net" Version="0.8.5" />
   </ItemGroup>
   <ItemGroup>
