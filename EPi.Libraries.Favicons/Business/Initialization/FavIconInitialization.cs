@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="FaviconInitialization.cs" company="Jeroen Stemerdink">
-//      Copyright © 2023 Jeroen Stemerdink.
+//      Copyright © 2026 Jeroen Stemerdink.
 //      Permission is hereby granted, free of charge, to any person obtaining a copy
 //      of this software and associated documentation files (the "Software"), to deal
 //      in the Software without restriction, including without limitation the rights
@@ -21,18 +21,18 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
+using Microsoft.Extensions.DependencyInjection;
+
 namespace EPi.Libraries.Favicons.Business.Initialization
 {
-    using EPi.Libraries.Favicons.Attributes;
-    using EPi.Libraries.Favicons.Business.Services;
+    using Attributes;
+    using Services;
 
     using EPiServer;
     using EPiServer.Core;
     using EPiServer.Framework;
-    using EPiServer.Framework.Cache;
     using EPiServer.Framework.Initialization;
     using EPiServer.Logging;
-    using EPiServer.ServiceLocation;
     using EPiServer.Web;
 
     /// <summary>
@@ -50,7 +50,7 @@ namespace EPi.Libraries.Favicons.Business.Initialization
         /// <summary>
         ///     Check if the initialization has been done.
         /// </summary>
-        private static bool initialized;
+        private static bool _initialized;
 
         /// <summary>
         ///     Gets or sets the content events.
@@ -88,21 +88,21 @@ namespace EPi.Libraries.Favicons.Business.Initialization
             }
 
             // If already initialized, no need to do it again.
-            if (initialized)
+            if (_initialized)
             {
                 return;
             }
 
             Logger.Information("[Favicons] Initializing favicons functionality.");
 
-            this.ContentEvents = context.Locate.Advanced.GetInstance<IContentEvents>();
-            this.FaviconService = context.Locate.Advanced.GetInstance<IFaviconService>();
-            this.ResizeService = context.Locate.Advanced.GetInstance<IResizeService>();
+            this.ContentEvents = context.Services.GetRequiredService<IContentEvents>();
+            this.FaviconService = context.Services.GetRequiredService<IFaviconService>();
+            this.ResizeService = context.Services.GetRequiredService<IResizeService>();
 
             // Add initialization logic, this method is called once after CMS has been initialized
             this.ContentEvents.PublishedContent += this.ServiceOnPublishedContent;
 
-            initialized = true;
+            _initialized = true;
 
             Logger.Information("[Favicons] Favicons functionality initialized.");
         }
@@ -134,7 +134,7 @@ namespace EPi.Libraries.Favicons.Business.Initialization
             }
 
             // If already uninitialized, no need to do it again.
-            if (!initialized)
+            if (!_initialized)
             {
                 return;
             }
