@@ -154,3 +154,4 @@ $RECYCLE.BIN/
 /.vs/config/applicationhost.config
 .vs/
 EPi.Libraries.Favicons/modules/
+EPi.Libraries.Favicons.ImageSharp/modules/
