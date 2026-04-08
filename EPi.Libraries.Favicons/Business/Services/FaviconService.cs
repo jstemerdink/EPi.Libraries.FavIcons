@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="FaviconService.cs" company="Jeroen Stemerdink">
-//      Copyright © 2023 Jeroen Stemerdink.
+//      Copyright © 2026 Jeroen Stemerdink.
 //      Permission is hereby granted, free of charge, to any person obtaining a copy
 //      of this software and associated documentation files (the "Software"), to deal
 //      in the Software without restriction, including without limitation the rights
@@ -21,6 +21,11 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using EPiServer.Applications;
+using Microsoft.Extensions.Logging;
+
 namespace EPi.Libraries.Favicons.Business.Services
 {
     using System;
@@ -29,22 +34,16 @@ namespace EPi.Libraries.Favicons.Business.Services
     using System.Reflection;
     using System.Xml.Linq;
 
-    using EPi.Libraries.Favicons.Attributes;
-    using EPi.Libraries.Favicons.Models;
+    using Attributes;
+    using Models;
 
     using EPiServer;
     using EPiServer.Core;
     using EPiServer.DataAbstraction;
     using EPiServer.Framework.Cache;
-    using EPiServer.Logging;
     using EPiServer.ServiceLocation;
-    using EPiServer.Web;
-
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Routing;
-
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
 
     /// <summary>
     ///     Class FaviconService.
@@ -55,32 +54,14 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// <summary>
         ///     The logger
         /// </summary>
-        private static readonly ILogger Logger = LogManager.GetLogger();
+        private readonly ILogger<FaviconService> _logger;
 
-        /// <summary>
-        /// The content cache key creator
-        /// </summary>
-        private readonly IContentCacheKeyCreator contentCacheKeyCreator;
-
-        /// <summary>
-        /// The content model usage
-        /// </summary>
-        private readonly IContentModelUsage contentModelUsage;
-
-        /// <summary>
-        /// The content repository
-        /// </summary>
-        private readonly IContentRepository contentRepository;
-
-        /// <summary>
-        /// The content type repository
-        /// </summary>
-        private readonly IContentTypeRepository contentTypeRepository;
-
-        /// <summary>
-        /// The synchronized object instance cache
-        /// </summary>
-        private readonly ISynchronizedObjectInstanceCache synchronizedObjectInstanceCache;
+        private readonly IContentCacheKeyCreator _contentCacheKeyCreator;
+        private readonly IContentModelUsage _contentModelUsage;
+        private readonly IContentRepository _contentRepository;
+        private readonly IContentTypeRepository _contentTypeRepository;
+        private readonly ISynchronizedObjectInstanceCache _synchronizedObjectInstanceCache;
+        private readonly IApplicationResolver _applicationResolver;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FaviconService" /> class.
@@ -90,27 +71,33 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// <param name="contentModelUsage">The content model usage.</param>
         /// <param name="synchronizedObjectInstanceCache">The synchronized object instance cache.</param>
         /// <param name="contentCacheKeyCreator">The content cache key creator.</param>
+        /// <param name="logger">The logger</param>
+        /// <param name="applicationResolver">The application resolver</param>
         public FaviconService(
             IContentRepository contentRepository,
             IContentTypeRepository contentTypeRepository,
             IContentModelUsage contentModelUsage,
             ISynchronizedObjectInstanceCache synchronizedObjectInstanceCache,
-            IContentCacheKeyCreator contentCacheKeyCreator)
+            IContentCacheKeyCreator contentCacheKeyCreator, 
+            ILogger<FaviconService> logger, 
+            IApplicationResolver applicationResolver)
         {
-            this.contentRepository = contentRepository;
-            this.contentTypeRepository = contentTypeRepository;
-            this.contentModelUsage = contentModelUsage;
-            this.synchronizedObjectInstanceCache = synchronizedObjectInstanceCache;
-            this.contentCacheKeyCreator = contentCacheKeyCreator;
+            this._contentRepository = contentRepository;
+            this._contentTypeRepository = contentTypeRepository;
+            this._contentModelUsage = contentModelUsage;
+            this._synchronizedObjectInstanceCache = synchronizedObjectInstanceCache;
+            this._contentCacheKeyCreator = contentCacheKeyCreator;
+            this._logger = logger;
+            _applicationResolver = applicationResolver;
         }
 
         /// <summary>
-        ///     Gets the browserconfig XML for the current site. This allows you to customize the tile, when a user pins
+        ///     Gets the browser config XML for the current site. This allows you to customize the tile, when a user pins
         ///     the site to their Windows 8/10 start screen. See http://www.buildmypinnedsite.com and
         ///     https://msdn.microsoft.com/en-us/library/dn320426%28v=vs.85%29.aspx
         /// </summary>
         /// <param name="actionContext">The request context.</param>
-        /// <returns>The browserconfig XML for the current site.</returns>
+        /// <returns>The browser config XML for the current site.</returns>
         /// <remarks>Code based on https://github.com/RehanSaeed/ASP.NET-MVC-Boilerplate</remarks>
         [CLSCompliant(false)]
         public string GetBrowserConfigXml(ActionContext actionContext)
@@ -174,15 +161,15 @@ namespace EPi.Libraries.Favicons.Business.Services
             }
             catch (ArgumentNullException argumentNullException)
             {
-                Logger.Error("[Favicons] Error creating browserconfig xml", exception: argumentNullException);
+                _logger.LogError(argumentNullException, "[Favicons] Error creating browser config xml");
             }
             catch (FormatException formatException)
             {
-                Logger.Error("[Favicons] Error creating browserconfig xml", exception: formatException);
+                _logger.LogError(formatException, "[Favicons] Error creating browser config xml");
             }
             catch (InvalidOperationException invalidOperationException)
             {
-                Logger.Error("[Favicons] Error creating browserconfig xml", exception: invalidOperationException);
+                _logger.LogError(invalidOperationException, "[Favicons] Error creating browser config xml");
             }
 
             return string.Empty;
@@ -194,17 +181,12 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// </exception>
         public FaviconSettings GetFaviconSettings()
         {
-            FaviconSettings faviconSettings =
-                this.synchronizedObjectInstanceCache.Get(key: FaviconSettings.FaviconCacheKey) as FaviconSettings;
-
-            if (faviconSettings != null)
+            if (this._synchronizedObjectInstanceCache.Get(key: FaviconSettings.FaviconCacheKey) is FaviconSettings faviconSettings)
             {
                 return faviconSettings;
             }
 
-            IContent content;
-
-            ContentType type = this.contentTypeRepository.List()
+            ContentType type = this._contentTypeRepository.List()
                 .FirstOrDefault(c => HasAttribute<ContainsSettingsAttribute>(memberInfo: c.ModelType));
 
             if (type == null)
@@ -214,7 +196,7 @@ namespace EPi.Libraries.Favicons.Business.Services
             }
 
             ContentUsage settingsUsage =
-                this.contentModelUsage.ListContentOfContentType(contentType: type).FirstOrDefault();
+                this._contentModelUsage.ListContentOfContentType(contentType: type).FirstOrDefault();
 
             if (settingsUsage == null)
             {
@@ -222,7 +204,7 @@ namespace EPi.Libraries.Favicons.Business.Services
                     "[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .");
             }
 
-            this.contentRepository.TryGet(settingsUsage.ContentLink.ToReferenceWithoutVersion(), content: out content);
+            this._contentRepository.TryGet(settingsUsage.ContentLink.ToReferenceWithoutVersion(), content: out IContent content);
 
             faviconSettings = this.SetFaviconSettings(content as ContentData);
 
@@ -246,50 +228,50 @@ namespace EPi.Libraries.Favicons.Business.Services
             FaviconSettings faviconSettings = this.GetFaviconSettings();
             string iconsPath = this.GetVirtualIconPath();
 
-            JObject document = new JObject(
-                new JProperty("short_name", content: faviconSettings.ApplicationShortName),
-                new JProperty("name", content: faviconSettings.ApplicationShortName),
-                new JProperty(
-                    "icons",
-                    new JArray(
-                        GetIconJObject(
-                            urlHelper: urlHelper,
-                            string.Format(provider: CultureInfo.InvariantCulture, "/{0}/{1}", arg0: iconsPath, "android-chrome-36x36.png"),
-                            "36x36",
-                            "image/png",
-                            "0.75"),
-                        GetIconJObject(
-                            urlHelper: urlHelper, 
-                            string.Format(provider: CultureInfo.InvariantCulture, "/{0}/{1}", arg0: iconsPath, "android-chrome-48x48.png"),
-                            "48x48",
-                            "image/png",
-                            "1.0"),
-                        GetIconJObject(
-                            urlHelper: urlHelper,
-                            string.Format(provider: CultureInfo.InvariantCulture, "/{0}/{1}", arg0: iconsPath, "android-chrome-72x72.png"),
-                            "72x72",
-                            "image/png",
-                            "1.5"),
-                        GetIconJObject(
-                            urlHelper: urlHelper,
-                            string.Format(provider: CultureInfo.InvariantCulture, "/{0}/{1}", arg0: iconsPath, "android-chrome-96x96.png"),
-                            "96x96",
-                            "image/png",
-                            "2.0"),
-                        GetIconJObject(
-                            urlHelper: urlHelper,
-                            string.Format(provider: CultureInfo.InvariantCulture, "/{0}/{1}", arg0: iconsPath, "android-chrome-144x144.png"),
-                            "144x144",
-                            "image/png",
-                            "3.0"),
-                        GetIconJObject(
-                            urlHelper: urlHelper,
-                            string.Format(provider: CultureInfo.InvariantCulture, "/{0}/{1}", arg0: iconsPath, "android-chrome-192x192.png"),
-                            "192x192",
-                            "image/png",
-                            "4.0"))));
+            JsonObject document =new JsonObject
+            {
+                ["short_name"] = faviconSettings.ApplicationShortName,
+                ["name"] = faviconSettings.ApplicationShortName,
+                ["icons"] = new JsonArray(
+                    GetIconJObject(
+                        urlHelper: urlHelper,
+                        string.Format(provider: CultureInfo.InvariantCulture, "/{0}/{1}", arg0: iconsPath, "android-chrome-36x36.png"),
+                        "36x36",
+                        "image/png",
+                        "0.75"),
+                    GetIconJObject(
+                        urlHelper: urlHelper, 
+                        string.Format(provider: CultureInfo.InvariantCulture, "/{0}/{1}", arg0: iconsPath, "android-chrome-48x48.png"),
+                        "48x48",
+                        "image/png",
+                        "1.0"),
+                    GetIconJObject(
+                        urlHelper: urlHelper,
+                        string.Format(provider: CultureInfo.InvariantCulture, "/{0}/{1}", arg0: iconsPath, "android-chrome-72x72.png"),
+                        "72x72",
+                        "image/png",
+                        "1.5"),
+                    GetIconJObject(
+                        urlHelper: urlHelper,
+                        string.Format(provider: CultureInfo.InvariantCulture, "/{0}/{1}", arg0: iconsPath, "android-chrome-96x96.png"),
+                        "96x96",
+                        "image/png",
+                        "2.0"),
+                    GetIconJObject(
+                        urlHelper: urlHelper,
+                        string.Format(provider: CultureInfo.InvariantCulture, "/{0}/{1}", arg0: iconsPath, "android-chrome-144x144.png"),
+                        "144x144",
+                        "image/png",
+                        "3.0"),
+                    GetIconJObject(
+                        urlHelper: urlHelper,
+                        string.Format(provider: CultureInfo.InvariantCulture, "/{0}/{1}", arg0: iconsPath, "android-chrome-192x192.png"),
+                        "192x192",
+                        "image/png",
+                        "4.0"))
+            };
 
-            return document.ToString(formatting: Formatting.Indented);
+            return document.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
         }
 
         /// <summary>
@@ -304,7 +286,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         {
             if (contentData == null)
             {
-                return default(TO);
+                return null;
             }
 
             PropertyInfo propertyInfo =
@@ -312,7 +294,7 @@ namespace EPi.Libraries.Favicons.Business.Services
 
             if (propertyInfo == null)
             {
-                return default(TO);
+                return null;
             }
 
             return contentData.GetValue(name: propertyInfo.Name) as TO;
@@ -328,10 +310,9 @@ namespace EPi.Libraries.Favicons.Business.Services
         public TO GetPropertyValue<T, TO>(ContentReference contentReference)
             where T : Attribute where TO : class
         {
-            ContentData contentData;
-            this.contentRepository.TryGet(contentLink: contentReference, content: out contentData);
+            this._contentRepository.TryGet(contentLink: contentReference, content: out ContentData contentData);
 
-            return contentData == null ? default(TO) : this.GetPropertyValue<T, TO>(contentData: contentData);
+            return contentData == null ? null : this.GetPropertyValue<T, TO>(contentData: contentData);
         }
 
         /// <summary>
@@ -342,14 +323,16 @@ namespace EPi.Libraries.Favicons.Business.Services
         {
             try
             {
+                Website website = _applicationResolver.GetByContext() as Website;
+
                 // As you apparently cannot get the url for a folder, just return the hard coded path.
-                return !ContentReference.IsNullOrEmpty(contentLink: SiteDefinition.Current.SiteAssetsRoot)
+                return !ContentReference.IsNullOrEmpty(contentLink: website?.AssetsRoot)
                            ? "siteassets/favicons"
                            : "globalassets/favicons";
             }
             catch (Exception exception)
             {
-                Logger.Warning("[Favicons] Error getting the icon path", exception: exception);
+                _logger.LogWarning(exception, "[Favicons] Error getting the icon path");
             }
 
             return string.Empty;
@@ -377,7 +360,9 @@ namespace EPi.Libraries.Favicons.Business.Services
                     "[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .");
             }
 
-            this.synchronizedObjectInstanceCache.Remove(key: FaviconSettings.FaviconCacheKey);
+            Application website = _applicationResolver.GetByContext();
+            
+            this._synchronizedObjectInstanceCache.Remove(key: FaviconSettings.FaviconCacheKey);
 
             string applicationName = this.GetPropertyValue<ApplicationNameAttribute, string>(contentData: contentData);
             string applicationShortName =
@@ -407,11 +392,11 @@ namespace EPi.Libraries.Favicons.Business.Services
                                                       FaviconsPath = faviconsPath,
                                                       ApplicationName =
                                                           string.IsNullOrWhiteSpace(value: applicationName)
-                                                              ? SiteDefinition.Current.Name
+                                                              ? website?.DisplayName
                                                               : applicationName,
                                                       ApplicationShortName =
                                                           string.IsNullOrWhiteSpace(value: applicationShortName)
-                                                              ? SiteDefinition.Current.Name
+                                                              ? website?.DisplayName
                                                               : applicationShortName,
                                                       MobileWebAppCapable =
                                                           !ContentReference.IsNullOrEmpty(
@@ -419,11 +404,11 @@ namespace EPi.Libraries.Favicons.Business.Services
                                                   };
 
             string cacheKey =
-                this.contentCacheKeyCreator.CreateCommonCacheKey(contentLink: SiteDefinition.Current.StartPage);
+                this._contentCacheKeyCreator.CreateCommonCacheKey(contentLink: ContentReference.StartPage);
+            
+            CacheEvictionPolicy cacheEvictionPolicy = new CacheEvictionPolicy([cacheKey]);
 
-            CacheEvictionPolicy cacheEvictionPolicy = new CacheEvictionPolicy(new[] { cacheKey });
-
-            this.synchronizedObjectInstanceCache.Insert(
+            this._synchronizedObjectInstanceCache.Insert(
                 key: FaviconSettings.FaviconCacheKey,
                 value: faviconSettings,
                 evictionPolicy: cacheEvictionPolicy);
@@ -432,27 +417,29 @@ namespace EPi.Libraries.Favicons.Business.Services
         }
 
         /// <summary>
-        ///     Gets a <see cref="JObject" /> containing the specified image details.
+        ///     Gets a <see cref="JsonObject" /> containing the specified image details.
         /// </summary>
         /// <param name="urlHelper">The url helper.</param>
         /// <param name="iconPath">The path to the icon image.</param>
         /// <param name="sizes">The size of the image in the format AxB.</param>
         /// <param name="type">The MIME type of the image.</param>
         /// <param name="density">The pixel density of the image.</param>
-        /// <returns>A <see cref="JObject" /> containing the image details.</returns>
+        /// <returns>A <see cref="JsonObject" /> containing the image details.</returns>
         /// <remarks>Code based on https://github.com/RehanSaeed/ASP.NET-MVC-Boilerplate</remarks>
-        private static JObject GetIconJObject(
+        private static JsonObject GetIconJObject(
             UrlHelper urlHelper,
             string iconPath,
             string sizes,
             string type,
             string density)
         {
-            return new JObject(
-                new JProperty("src", urlHelper.Content(contentPath: iconPath)),
-                new JProperty("sizes", content: sizes),
-                new JProperty("type", content: type),
-                new JProperty("density", content: density));
+            return new JsonObject
+            {
+                ["src"] = urlHelper.Content(contentPath: iconPath),
+                ["sizes"] = sizes,
+                ["type"] = type,
+                ["density"] = density
+            };
         }
 
         /// <summary>
@@ -464,7 +451,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         private static bool HasAttribute<T>(PropertyInfo propertyInfo)
             where T : Attribute
         {
-            T attr = default(T);
+            T attr = null;
 
             try
             {
@@ -487,7 +474,7 @@ namespace EPi.Libraries.Favicons.Business.Services
         private static bool HasAttribute<T>(MemberInfo memberInfo)
             where T : Attribute
         {
-            T attr = default(T);
+            T attr = null;
 
             try
             {

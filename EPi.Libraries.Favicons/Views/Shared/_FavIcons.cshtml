@@ -7,7 +7,7 @@
     {
         faviconSettings = ServiceLocator.Current.GetInstance<IFaviconService>().GetFaviconSettings();
     }
-    catch (ActivationException)
+    catch (InvalidOperationException)
     {
     }
 
