@@ -20,18 +20,18 @@
     <AssemblyOriginatorKeyFile>EPiServer.Libraries.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-	  <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+	  <TargetFrameworks>net10.0</TargetFrameworks>
 	  <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 	  <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
 	  <NoWin32Manifest>true</NoWin32Manifest>
 	  <PackageIcon>icon.png</PackageIcon>
-	  <Copyright>Copyright © Jeroen Stemerdink 2023</Copyright>
+	  <Copyright>Copyright © Jeroen Stemerdink 2026</Copyright>
 	  <PackageProjectUrl>https://github.com/jstemerdink/EPi.Libraries.Favicons/</PackageProjectUrl>
 	  <Description>Image resizing service for use within EPi.Libraries.Favicons</Description>
 	  <RepositoryUrl>https://github.com/jstemerdink/EPi.Libraries.Favicons/</RepositoryUrl>
 	  <PackageTags>SEO;EPiServerModulePackage</PackageTags>
 	  <PackageReadmeFile>README.md</PackageReadmeFile>
-	  <PackageReleaseNotes>New ImageSharp service</PackageReleaseNotes>
+	  <PackageReleaseNotes>Update for CMS 13e</PackageReleaseNotes>
 	  <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
 	  <Authors>Jeroen Stemerdink</Authors>
 	  <IsPackable>true</IsPackable>
@@ -61,19 +61,7 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-		<None Update="EPi.Libraries.Favicons.ImageSharp.targets">
-			<Pack>True</Pack>
-			<PackagePath>build\net6.0\</PackagePath>
-		</None>
-	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
-		<None Update="EPi.Libraries.Favicons.ImageSharp.targets">
-			<Pack>True</Pack>
-			<PackagePath>build\net7.0\</PackagePath>
-		</None>
-	</ItemGroup>
 	<ItemGroup>
-	  <PackageReference Include="EPiServer.ImageLibrary.ImageSharp" Version="[1.0.0,2)" />
+	  <PackageReference Include="EPiServer.ImageLibrary.ImageSharp" Version="13.0.0" />
 	</ItemGroup>
 </Project>

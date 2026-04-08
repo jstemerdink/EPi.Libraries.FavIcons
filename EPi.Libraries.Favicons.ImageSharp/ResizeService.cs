@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ResizeService.cs" company="Jeroen Stemerdink">
-//      Copyright © 2023 Jeroen Stemerdink.
+//      Copyright © 2026 Jeroen Stemerdink.
 //      Permission is hereby granted, free of charge, to any person obtaining a copy
 //      of this software and associated documentation files (the "Software"), to deal
 //      in the Software without restriction, including without limitation the rights
@@ -23,11 +23,9 @@
 
 namespace EPi.Libraries.Favicons.ImageSharp
 {
-    using System;
-    using System.Globalization;
-    using System.IO;
     using Business.Services;
     using EPiServer;
+    using EPiServer.Applications;
     using EPiServer.Core;
     using EPiServer.DataAbstraction;
     using EPiServer.DataAccess;
@@ -37,6 +35,9 @@ namespace EPi.Libraries.Favicons.ImageSharp
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Formats.Png;
     using SixLabors.ImageSharp.Processing;
+    using System;
+    using System.Globalization;
+    using System.IO;
 
     /// <summary>
     ///     Class ResizeService.
@@ -46,7 +47,7 @@ namespace EPi.Libraries.Favicons.ImageSharp
     [ServiceConfiguration(typeof(IResizeService), Lifecycle = ServiceInstanceScope.Singleton)]
     public class ResizeService : ResizeServiceBase
     {
-        private readonly ILogger<ResizeService> logger;
+        private readonly ILogger<ResizeService> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResizeService" /> class.
@@ -55,21 +56,24 @@ namespace EPi.Libraries.Favicons.ImageSharp
         /// <param name="contentTypeRepository">The content type repository.</param>
         /// <param name="contentMediaResolver">The content media resolver.</param>
         /// <param name="blobFactory">The BLOB factory.</param>
+        /// <param name="applicationResolver">The application resolver.</param>
         /// <param name="logger">The logger.</param>
         public ResizeService(
             IContentRepository contentRepository,
             IContentTypeRepository contentTypeRepository,
             ContentMediaResolver contentMediaResolver,
             IBlobFactory blobFactory,
+            IApplicationResolver applicationResolver,
             ILogger<ResizeService> logger)
             : base(
                 contentRepository: contentRepository,
                 contentTypeRepository: contentTypeRepository,
                 contentMediaResolver: contentMediaResolver,
                 blobFactory: blobFactory,
+                applicationResolver,
                 logger: logger)
         {
-            this.logger = logger;
+            this._logger = logger;
         }
 
         /// <summary>
@@ -105,9 +109,9 @@ namespace EPi.Libraries.Favicons.ImageSharp
                 
                 if (processedImageBytes?.Length == 0)
                 {
-                    this.logger.Log(
+                    this._logger.Log(
                         logLevel: LogLevel.Debug,
-                        "[Favicons] Error creating icon. Processed file is empty.");
+                        "[Favicons] Error creating icon. Processed file is empty");
                     return;
                 }
 
@@ -139,10 +143,10 @@ namespace EPi.Libraries.Favicons.ImageSharp
             }
             catch (Exception exception)
             {
-                this.logger.Log(
+                this._logger.Log(
                     logLevel: LogLevel.Error,
                     exception: exception,
-                    "[Favicons] Error creating icon.");
+                    "[Favicons] Error creating icon");
             }
         }
     }
