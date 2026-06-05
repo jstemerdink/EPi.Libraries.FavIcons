@@ -73,7 +73,7 @@ namespace EPi.Libraries.Favicons.ImageSharp
                 applicationResolver,
                 logger: logger)
         {
-            this._logger = logger;
+            _logger = logger;
         }
 
         /// <summary>
@@ -109,19 +109,19 @@ namespace EPi.Libraries.Favicons.ImageSharp
                 
                 if (processedImageBytes?.Length == 0)
                 {
-                    this._logger.Log(
+                    _logger.Log(
                         logLevel: LogLevel.Debug,
                         "[Favicons] Error creating icon. Processed file is empty");
                     return;
                 }
 
                 // Get a suitable MediaData type from extension
-                Type mediaType = this.ContentMediaResolver.GetFirstMatching(".png");
+                Type mediaType = ContentMediaResolver.GetFirstMatching(".png");
 
-                ContentType contentType = this.ContentTypeRepository.Load(modelType: mediaType);
+                ContentType contentType = ContentTypeRepository.Load(modelType: mediaType);
 
                 // Get a new empty file data
-                ImageData media = this.ContentRepository.GetDefault<ImageData>(
+                ImageData media = ContentRepository.GetDefault<ImageData>(
                     parentLink: rootFolder,
                     contentTypeID: contentType.ID);
 
@@ -133,17 +133,17 @@ namespace EPi.Libraries.Favicons.ImageSharp
                     arg2: height);
 
                 // Create a blob in the binary container
-                Blob blob = this.BlobFactory.CreateBlob(id: media.BinaryDataContainer, ".png");
+                Blob blob = BlobFactory.CreateBlob(id: media.BinaryDataContainer, ".png");
 
                 blob.WriteAllBytes(processedImageBytes);
 
                 // Assign to file and publish changes
                 media.BinaryData = blob;
-                this.ContentRepository.Save(content: media, action: SaveAction.Publish);
+                ContentRepository.Save(content: media, action: SaveAction.Publish);
             }
             catch (Exception exception)
             {
-                this._logger.Log(
+                _logger.Log(
                     logLevel: LogLevel.Error,
                     exception: exception,
                     "[Favicons] Error creating icon");

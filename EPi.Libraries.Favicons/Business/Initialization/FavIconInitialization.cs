@@ -50,7 +50,7 @@ namespace EPi.Libraries.Favicons.Business.Initialization
         /// <summary>
         ///     Check if the initialization has been done.
         /// </summary>
-        private static bool _initialized;
+        private bool _initialized;
 
         /// <summary>
         ///     Gets or sets the content events.
@@ -95,12 +95,12 @@ namespace EPi.Libraries.Favicons.Business.Initialization
 
             Logger.Information("[Favicons] Initializing favicons functionality.");
 
-            this.ContentEvents = context.Services.GetRequiredService<IContentEvents>();
-            this.FaviconService = context.Services.GetRequiredService<IFaviconService>();
-            this.ResizeService = context.Services.GetRequiredService<IResizeService>();
+            ContentEvents = context.Services.GetRequiredService<IContentEvents>();
+            FaviconService = context.Services.GetRequiredService<IFaviconService>();
+            ResizeService = context.Services.GetRequiredService<IResizeService>();
 
             // Add initialization logic, this method is called once after CMS has been initialized
-            this.ContentEvents.PublishedContent += this.ServiceOnPublishedContent;
+            ContentEvents.PublishedContent += ServiceOnPublishedContent;
 
             _initialized = true;
 
@@ -141,8 +141,16 @@ namespace EPi.Libraries.Favicons.Business.Initialization
 
             Logger.Information("[Favicons] Uninitializing favicons functionality.");
 
-            // Add uninitialization logic
-            this.ContentEvents.PublishedContent -= this.ServiceOnPublishedContent;
+            if (ContentEvents != null)
+            {
+                ContentEvents.PublishedContent -= ServiceOnPublishedContent;
+            }
+
+            ContentEvents = null;
+            FaviconService = null;
+            ResizeService = null;
+
+            _initialized = false;   // allow clean re-initialization
 
             Logger.Information("[Favicons] Favicons functionality uninitialized.");
         }
@@ -161,36 +169,36 @@ namespace EPi.Libraries.Favicons.Business.Initialization
                 return;
             }
 
-            if (!this.FaviconService.HasSettings(contentData: contentData))
+            if (!FaviconService.HasSettings(contentData: contentData))
             {
                 return;
             }
 
             ContentReference faviconReference =
-                this.FaviconService.GetPropertyValue<WebsiteIconAttribute, ContentReference>(
+                FaviconService.GetPropertyValue<WebsiteIconAttribute, ContentReference>(
                     contentData: contentData);
 
             if (ContentReference.IsNullOrEmpty(contentLink: faviconReference))
             {
-                this.ResizeService.DeleteFavicons();
+                ResizeService.DeleteFavicons();
                 return;
             }
 
             // Remove the icons. More efficient than getting them one by one and updating them.
-            this.ResizeService.CleanUpFavicons();
+            ResizeService.CleanUpFavicons();
 
-            if (!this.ResizeService.CreateFavicons(iconReference: faviconReference))
+            if (!ResizeService.CreateFavicons(iconReference: faviconReference))
             {
                 return;
             }
 
             ContentReference mobileAppIconReference =
-                this.FaviconService.GetPropertyValue<MobileAppIconAttribute, ContentReference>(
+                FaviconService.GetPropertyValue<MobileAppIconAttribute, ContentReference>(
                     contentData: contentData);
 
-            this.ResizeService.CreateMobileAppIcons(iconReference: mobileAppIconReference);
+            ResizeService.CreateMobileAppIcons(iconReference: mobileAppIconReference);
 
-            this.FaviconService.SetFaviconSettings(contentData: contentData);
+            FaviconService.SetFaviconSettings(contentData: contentData);
         }
     }
 }

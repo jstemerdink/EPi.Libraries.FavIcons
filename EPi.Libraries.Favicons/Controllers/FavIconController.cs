@@ -41,7 +41,7 @@ namespace EPi.Libraries.Favicons.Controllers
         ///     Gets or sets the favicon service.
         /// </summary>
         /// <value>The favicon service.</value>
-        private readonly IFaviconService faviconService;
+        private readonly IFaviconService _faviconService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FaviconController"/> class.
@@ -49,7 +49,7 @@ namespace EPi.Libraries.Favicons.Controllers
         /// <param name="faviconService">The favicon service.</param>
         public FaviconController(IFaviconService faviconService)
         {
-            this.faviconService = faviconService;
+            _faviconService = faviconService;
         }
 
         /// <summary>
@@ -63,8 +63,8 @@ namespace EPi.Libraries.Favicons.Controllers
         [Route("browserconfig.xml", Name = "GetBrowserConfigXml")]
         public ContentResult BrowserConfigXml()
         {
-            string content = this.faviconService.GetBrowserConfigXml(actionContext: this.ControllerContext);
-            return this.Content(content: content, @"application/xml", contentEncoding: Encoding.UTF8);
+            string content = _faviconService.GetBrowserConfigXml(actionContext: ControllerContext);
+            return Content(content: content, @"application/xml", contentEncoding: Encoding.UTF8);
         }
 
         /// <summary>
@@ -80,8 +80,8 @@ namespace EPi.Libraries.Favicons.Controllers
         [Route("manifest.json", Name = "GetManifestJson")]
         public ContentResult ManifestJson()
         {
-            string content = this.faviconService.GetManifestJson(actionContext: this.ControllerContext);
-            return this.Content(content: content, @"application/json", contentEncoding: Encoding.UTF8);
+            string content = _faviconService.GetManifestJson(actionContext: ControllerContext);
+            return Content(content: content, @"application/json", contentEncoding: Encoding.UTF8);
         }
     }
 }
