@@ -82,12 +82,12 @@ namespace EPi.Libraries.Favicons.Business.Services
             ILogger<FaviconService> logger, 
             IApplicationResolver applicationResolver)
         {
-            this._contentRepository = contentRepository;
-            this._contentTypeRepository = contentTypeRepository;
-            this._contentModelUsage = contentModelUsage;
-            this._synchronizedObjectInstanceCache = synchronizedObjectInstanceCache;
-            this._contentCacheKeyCreator = contentCacheKeyCreator;
-            this._logger = logger;
+            _contentRepository = contentRepository;
+            _contentTypeRepository = contentTypeRepository;
+            _contentModelUsage = contentModelUsage;
+            _synchronizedObjectInstanceCache = synchronizedObjectInstanceCache;
+            _contentCacheKeyCreator = contentCacheKeyCreator;
+            _logger = logger;
             _applicationResolver = applicationResolver;
         }
 
@@ -105,8 +105,8 @@ namespace EPi.Libraries.Favicons.Business.Services
             try
             {
                 UrlHelper urlHelper = new UrlHelper(actionContext: actionContext);
-                FaviconSettings faviconSettings = this.GetFaviconSettings();
-                string iconsPath = this.GetVirtualIconPath();
+                FaviconSettings faviconSettings = GetFaviconSettings();
+                string iconsPath = GetVirtualIconPath();
 
                 // The URL to the 70x70 small tile image.
                 string square70X70LogoUrl = urlHelper.Content(
@@ -181,12 +181,16 @@ namespace EPi.Libraries.Favicons.Business.Services
         /// </exception>
         public FaviconSettings GetFaviconSettings()
         {
-            if (this._synchronizedObjectInstanceCache.Get(key: FaviconSettings.FaviconCacheKey) is FaviconSettings faviconSettings)
+            Application website = _applicationResolver.GetByContext();
+            
+            string favIconCacheKey = $"{FaviconSettings.FaviconCacheKey}:{website?.Name ?? "*"}";
+
+            if (_synchronizedObjectInstanceCache.Get(key: favIconCacheKey) is FaviconSettings faviconSettings)
             {
                 return faviconSettings;
             }
 
-            ContentType type = this._contentTypeRepository.List()
+            ContentType type = _contentTypeRepository.List()
                 .FirstOrDefault(c => HasAttribute<ContainsSettingsAttribute>(memberInfo: c.ModelType));
 
             if (type == null)
@@ -196,7 +200,7 @@ namespace EPi.Libraries.Favicons.Business.Services
             }
 
             ContentUsage settingsUsage =
-                this._contentModelUsage.ListContentOfContentType(contentType: type).FirstOrDefault();
+                _contentModelUsage.ListContentOfContentType(contentType: type).FirstOrDefault();
 
             if (settingsUsage == null)
             {
@@ -204,9 +208,9 @@ namespace EPi.Libraries.Favicons.Business.Services
                     "[Favicons] No settings defined. Use ContainsSettings attribute on your ContentType .");
             }
 
-            this._contentRepository.TryGet(settingsUsage.ContentLink.ToReferenceWithoutVersion(), content: out IContent content);
+            _contentRepository.TryGet(settingsUsage.ContentLink.ToReferenceWithoutVersion(), content: out IContent content);
 
-            faviconSettings = this.SetFaviconSettings(content as ContentData);
+            faviconSettings = SetFaviconSettings(content as ContentData);
 
             return faviconSettings;
         }
@@ -225,8 +229,8 @@ namespace EPi.Libraries.Favicons.Business.Services
         public string GetManifestJson(ActionContext actionContext)
         {
             UrlHelper urlHelper = new UrlHelper(actionContext: actionContext);
-            FaviconSettings faviconSettings = this.GetFaviconSettings();
-            string iconsPath = this.GetVirtualIconPath();
+            FaviconSettings faviconSettings = GetFaviconSettings();
+            string iconsPath = GetVirtualIconPath();
 
             JsonObject document =new JsonObject
             {
@@ -310,9 +314,9 @@ namespace EPi.Libraries.Favicons.Business.Services
         public TO GetPropertyValue<T, TO>(ContentReference contentReference)
             where T : Attribute where TO : class
         {
-            this._contentRepository.TryGet(contentLink: contentReference, content: out ContentData contentData);
+            _contentRepository.TryGet(contentLink: contentReference, content: out ContentData contentData);
 
-            return contentData == null ? null : this.GetPropertyValue<T, TO>(contentData: contentData);
+            return contentData == null ? null : GetPropertyValue<T, TO>(contentData: contentData);
         }
 
         /// <summary>
@@ -362,19 +366,21 @@ namespace EPi.Libraries.Favicons.Business.Services
 
             Application website = _applicationResolver.GetByContext();
             
-            this._synchronizedObjectInstanceCache.Remove(key: FaviconSettings.FaviconCacheKey);
+            string favIconCacheKey = $"{FaviconSettings.FaviconCacheKey}:{website?.Name ?? "*"}";
 
-            string applicationName = this.GetPropertyValue<ApplicationNameAttribute, string>(contentData: contentData);
+            _synchronizedObjectInstanceCache.Remove(key: favIconCacheKey);
+
+            string applicationName = GetPropertyValue<ApplicationNameAttribute, string>(contentData: contentData);
             string applicationShortName =
-                this.GetPropertyValue<ApplicationShortNameAttribute, string>(contentData: contentData);
-            string themeColor = this.GetPropertyValue<ThemeColorAttribute, string>(contentData: contentData);
-            string tileColor = this.GetPropertyValue<TileColorAttribute, string>(contentData: contentData);
-            string faviconsPath = this.GetVirtualIconPath();
+                GetPropertyValue<ApplicationShortNameAttribute, string>(contentData: contentData);
+            string themeColor = GetPropertyValue<ThemeColorAttribute, string>(contentData: contentData);
+            string tileColor = GetPropertyValue<TileColorAttribute, string>(contentData: contentData);
+            string faviconsPath = GetVirtualIconPath();
 
             ContentReference faviconReference =
-                this.GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData: contentData);
+                GetPropertyValue<WebsiteIconAttribute, ContentReference>(contentData: contentData);
             ContentReference mobileAppIconReference =
-                this.GetPropertyValue<MobileAppIconAttribute, ContentReference>(contentData: contentData);
+                GetPropertyValue<MobileAppIconAttribute, ContentReference>(contentData: contentData);
 
             FaviconSettings faviconSettings = new FaviconSettings
                                                   {
@@ -404,12 +410,12 @@ namespace EPi.Libraries.Favicons.Business.Services
                                                   };
 
             string cacheKey =
-                this._contentCacheKeyCreator.CreateCommonCacheKey(contentLink: ContentReference.StartPage);
+                _contentCacheKeyCreator.CreateCommonCacheKey(contentLink: ContentReference.StartPage);
             
             CacheEvictionPolicy cacheEvictionPolicy = new CacheEvictionPolicy([cacheKey]);
 
-            this._synchronizedObjectInstanceCache.Insert(
-                key: FaviconSettings.FaviconCacheKey,
+            _synchronizedObjectInstanceCache.Insert(
+                key: favIconCacheKey,
                 value: faviconSettings,
                 evictionPolicy: cacheEvictionPolicy);
 
